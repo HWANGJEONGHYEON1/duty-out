@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../providers/schedule_provider.dart';
-import '../models/schedule_item.dart';
 
 class ScheduleScreen extends StatefulWidget {
   @override

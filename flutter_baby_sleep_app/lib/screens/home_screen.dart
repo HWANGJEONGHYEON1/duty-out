@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import '../providers/schedule_provider.dart';
 import '../providers/baby_provider.dart';
 import '../providers/sleep_record_provider.dart';
-import '../widgets/countdown_timer.dart';
-import '../widgets/timeline_widget.dart';
 import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -865,4 +863,152 @@ class CircularProgressPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+// 오늘의 타임라인
+class TodayTimeline extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final scheduleProvider = Provider.of<ScheduleProvider>(context);
+    final todaySchedule = scheduleProvider.getScheduleForDate(DateTime.now());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '오늘의 일정',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 15),
+        todaySchedule.isEmpty
+            ? Container(
+                padding: EdgeInsets.all(40),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(Icons.calendar_today, size: 48, color: Colors.grey[300]),
+                      SizedBox(height: 10),
+                      Text(
+                        '오늘의 스케줄이 없습니다',
+                        style: TextStyle(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : Column(
+                children: todaySchedule.map((item) {
+                  return TimelineItem(item: item);
+                }).toList(),
+              ),
+      ],
+    );
+  }
+}
+
+// 타임라인 아이템
+class TimelineItem extends StatelessWidget {
+  final ScheduleItem item;
+
+  const TimelineItem({Key? key, required this.item}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    IconData icon;
+    Color color;
+
+    switch (item.type) {
+      case 'sleep':
+        icon = Icons.bedtime;
+        color = Color(0xFF667EEA);
+        break;
+      case 'wake':
+        icon = Icons.wb_sunny;
+        color = Color(0xFFFFA726);
+        break;
+      case 'feed':
+        icon = Icons.restaurant;
+        color = Color(0xFF4CAF50);
+        break;
+      default:
+        icon = Icons.circle;
+        color = Colors.grey;
+    }
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          // 타임라인 인디케이터
+          Column(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+            ],
+          ),
+          SizedBox(width: 15),
+          // 일정 정보
+          Expanded(
+            child: Container(
+              padding: EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        DateFormat('HH:mm').format(item.scheduledTime),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (item.isCompleted)
+                        Icon(Icons.check_circle, color: color, size: 20),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    item.notes ?? '활동',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '${item.durationMinutes}분',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
