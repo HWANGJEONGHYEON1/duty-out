@@ -18,16 +18,18 @@ void main() {
         ChangeNotifierProvider(create: (_) => ScheduleProvider()),
         ChangeNotifierProvider(create: (_) => SleepRecordProvider()),
       ],
-      child: BabySleepSchedulerApp(),
+      child: const BabySleepSchedulerApp(),
     ),
   );
 }
 
 class BabySleepSchedulerApp extends StatelessWidget {
+  const BabySleepSchedulerApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     SystemChrome.setSystemUIOverlayStyle(
-      SystemUiOverlayStyle(
+      const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
         statusBarIconBrightness: Brightness.dark,
       ),
