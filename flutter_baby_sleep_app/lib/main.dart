@@ -71,10 +71,19 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _initializeMockDataAndNavigate();
   }
 
-  _navigateToHome() async {
+  _initializeMockDataAndNavigate() async {
+    // Initialize mock data for all providers
+    final babyProvider = Provider.of<BabyProvider>(context, listen: false);
+    final scheduleProvider = Provider.of<ScheduleProvider>(context, listen: false);
+    final sleepRecordProvider = Provider.of<SleepRecordProvider>(context, listen: false);
+
+    babyProvider.initializeMockData();
+    scheduleProvider.initializeMockData();
+    sleepRecordProvider.initializeMockData();
+
     await Future.delayed(Duration(seconds: 2));
     Navigator.pushReplacementNamed(context, '/main');
   }

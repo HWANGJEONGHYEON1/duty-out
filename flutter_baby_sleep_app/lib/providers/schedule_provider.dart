@@ -47,6 +47,80 @@ class ScheduleProvider extends ChangeNotifier {
   List<ScheduleItem> get scheduleItems => _scheduleItems;
   DateTime get selectedDate => _selectedDate;
 
+  // Mock 데이터 초기화
+  void initializeMockData() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    _scheduleItems = [
+      ScheduleItem(
+        id: 'mock-1',
+        type: 'wake',
+        scheduledTime: today.add(Duration(hours: 7)),
+        durationMinutes: 120,
+        notes: '기상 및 아침 활동',
+        isCompleted: true,
+      ),
+      ScheduleItem(
+        id: 'mock-2',
+        type: 'sleep',
+        scheduledTime: today.add(Duration(hours: 9)),
+        durationMinutes: 90,
+        notes: '첫 번째 낮잠',
+        isCompleted: true,
+      ),
+      ScheduleItem(
+        id: 'mock-3',
+        type: 'wake',
+        scheduledTime: today.add(Duration(hours: 10, minutes: 30)),
+        durationMinutes: 150,
+        notes: '놀이 시간',
+        isCompleted: true,
+      ),
+      ScheduleItem(
+        id: 'mock-4',
+        type: 'feed',
+        scheduledTime: today.add(Duration(hours: 12)),
+        durationMinutes: 30,
+        notes: '점심 수유',
+        isCompleted: true,
+      ),
+      ScheduleItem(
+        id: 'mock-5',
+        type: 'sleep',
+        scheduledTime: today.add(Duration(hours: 13)),
+        durationMinutes: 90,
+        notes: '두 번째 낮잠',
+        isCompleted: false,
+      ),
+      ScheduleItem(
+        id: 'mock-6',
+        type: 'wake',
+        scheduledTime: today.add(Duration(hours: 14, minutes: 30)),
+        durationMinutes: 180,
+        notes: '오후 활동',
+        isCompleted: false,
+      ),
+      ScheduleItem(
+        id: 'mock-7',
+        type: 'feed',
+        scheduledTime: today.add(Duration(hours: 17)),
+        durationMinutes: 30,
+        notes: '저녁 수유',
+        isCompleted: false,
+      ),
+      ScheduleItem(
+        id: 'mock-8',
+        type: 'sleep',
+        scheduledTime: today.add(Duration(hours: 19)),
+        durationMinutes: 660, // 11시간
+        notes: '밤잠',
+        isCompleted: false,
+      ),
+    ];
+    notifyListeners();
+  }
+
   List<ScheduleItem> getScheduleForDate(DateTime date) {
     return _scheduleItems.where((item) {
       return item.scheduledTime.year == date.year &&
