@@ -25,6 +25,7 @@ class ScheduleScreen extends StatelessWidget {
     final baby = context.watch<BabyProvider>().baby;
 
     return Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -60,6 +61,7 @@ class ScheduleScreen extends StatelessWidget {
     final scheduleProvider = context.watch<ScheduleProvider>();
 
     return Container(
+      width: double.infinity,
       color: Colors.white,
       padding: const EdgeInsets.all(20),
       child: Column(

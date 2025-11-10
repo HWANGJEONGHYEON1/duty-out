@@ -25,6 +25,7 @@ class StatisticsScreen extends StatelessWidget {
     final baby = context.watch<BabyProvider>().baby;
 
     return Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -164,6 +165,7 @@ class StatisticsScreen extends StatelessWidget {
     final minutes = totalMinutes % 60;
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -287,6 +289,7 @@ class StatisticsScreen extends StatelessWidget {
     final days = ['월', '화', '수', '목', '금', '토', '일'];
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -374,6 +377,7 @@ class StatisticsScreen extends StatelessWidget {
     final percentage = provider.getSleepGoalPercentage();
 
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
