@@ -30,6 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildHeader(BuildContext context) {
     return Container(
+      width: double.infinity,
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -153,6 +154,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileField(String label, String value, {bool isEditable = false}) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
@@ -205,6 +207,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ValueChanged<bool> onChanged,
   ) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
