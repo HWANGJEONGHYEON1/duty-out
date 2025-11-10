@@ -58,6 +58,75 @@ class SleepRecordProvider extends ChangeNotifier {
   SleepRecord? get activeRecord => _activeRecord;
   bool get hasActiveRecord => _activeRecord != null;
 
+  // Mock 데이터 초기화
+  void initializeMockData() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    _sleepRecords = [
+      // 오늘 수면 기록
+      SleepRecord(
+        id: 'mock-sleep-1',
+        startTime: today.add(Duration(hours: 9)),
+        endTime: today.add(Duration(hours: 10, minutes: 30)),
+        durationMinutes: 90,
+        quality: 'good',
+        notes: '첫 번째 낮잠 - 잘 잤어요',
+      ),
+      SleepRecord(
+        id: 'mock-sleep-2',
+        startTime: today.add(Duration(hours: 13)),
+        endTime: today.add(Duration(hours: 14, minutes: 30)),
+        durationMinutes: 90,
+        quality: 'good',
+        notes: '두 번째 낮잠',
+      ),
+      // 어제 수면 기록
+      SleepRecord(
+        id: 'mock-sleep-3',
+        startTime: today.subtract(Duration(days: 1, hours: -9)),
+        endTime: today.subtract(Duration(days: 1, hours: -10, minutes: -20)),
+        durationMinutes: 80,
+        quality: 'fair',
+        notes: '어제 첫 번째 낮잠',
+      ),
+      SleepRecord(
+        id: 'mock-sleep-4',
+        startTime: today.subtract(Duration(days: 1, hours: -13)),
+        endTime: today.subtract(Duration(days: 1, hours: -14, minutes: -45)),
+        durationMinutes: 105,
+        quality: 'good',
+        notes: '어제 두 번째 낮잠',
+      ),
+      SleepRecord(
+        id: 'mock-sleep-5',
+        startTime: today.subtract(Duration(days: 1, hours: -19)),
+        endTime: today.add(Duration(hours: 6)),
+        durationMinutes: 660,
+        quality: 'good',
+        notes: '어제 밤잠',
+      ),
+      // 그제 수면 기록
+      SleepRecord(
+        id: 'mock-sleep-6',
+        startTime: today.subtract(Duration(days: 2, hours: -9, minutes: -30)),
+        endTime: today.subtract(Duration(days: 2, hours: -11)),
+        durationMinutes: 90,
+        quality: 'good',
+        notes: '그제 첫 번째 낮잠',
+      ),
+      SleepRecord(
+        id: 'mock-sleep-7',
+        startTime: today.subtract(Duration(days: 2, hours: -14)),
+        endTime: today.subtract(Duration(days: 2, hours: -15, minutes: -30)),
+        durationMinutes: 90,
+        quality: 'fair',
+        notes: '그제 두 번째 낮잠 - 중간에 깸',
+      ),
+    ];
+    notifyListeners();
+  }
+
   List<SleepRecord> getRecordsForDate(DateTime date) {
     return _sleepRecords.where((record) {
       return record.startTime.year == date.year &&

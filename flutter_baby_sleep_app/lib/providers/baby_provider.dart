@@ -46,6 +46,16 @@ class BabyProvider extends ChangeNotifier {
 
   bool get hasBaby => _currentBaby != null;
 
+  // Mock 데이터 초기화
+  void initializeMockData() {
+    _currentBaby = Baby(
+      id: 'mock-baby-1',
+      name: '민준',
+      birthDate: DateTime.now().subtract(Duration(days: 137)), // 약 4.5개월
+    );
+    notifyListeners();
+  }
+
   void setBaby(Baby baby) {
     _currentBaby = baby;
     notifyListeners();
