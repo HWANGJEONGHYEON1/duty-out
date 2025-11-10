@@ -8,9 +8,7 @@ import 'providers/sleep_tracking_provider.dart';
 import 'screens/main_screen.dart';
 
 void main() {
-  // Google Fonts 미리 로드
-  GoogleFonts.config.allowRuntimeFetching = false;
-
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const BabySleepApp());
 }
 
