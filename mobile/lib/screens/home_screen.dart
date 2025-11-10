@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/baby_provider.dart';
 import '../providers/schedule_provider.dart';
+import 'sleep_tracking_screen.dart';
+import 'history_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,7 +31,12 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       floatingActionButton: GestureDetector(
-        onTap: () {},
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const SleepTrackingScreen()),
+          );
+        },
         child: Container(
           width: 56,
           height: 56,
@@ -71,23 +78,44 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            '오늘의 수면 스케줄',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '오늘의 수면 스케줄',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 5),
-          Text(
-            baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
-            style: const TextStyle(
+          IconButton(
+            icon: const Icon(
+              Icons.history,
               color: Colors.white,
-              fontSize: 14,
+              size: 28,
             ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
           ),
         ],
       ),
@@ -169,49 +197,57 @@ class HomeScreen extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _buildQuickActionButton('😴', '수면 시작'),
+          child: _buildQuickActionButton(context, '😴', '수면 시작', () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const SleepTrackingScreen()),
+            );
+          }),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _buildQuickActionButton('🍼', '수유 기록'),
+          child: _buildQuickActionButton(context, '🍼', '수유 기록', () {}),
         ),
         const SizedBox(width: 10),
         Expanded(
-          child: _buildQuickActionButton('👶', '기저귀'),
+          child: _buildQuickActionButton(context, '👶', '기저귀', () {}),
         ),
       ],
     );
   }
 
-  Widget _buildQuickActionButton(String icon, String label) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(15),
-      child: Column(
-        children: [
-          Text(
-            icon,
-            style: const TextStyle(fontSize: 30),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
+  Widget _buildQuickActionButton(BuildContext context, String icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        padding: const EdgeInsets.all(15),
+        child: Column(
+          children: [
+            Text(
+              icon,
+              style: const TextStyle(fontSize: 30),
+            ),
+            const SizedBox(height: 5),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
