@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아기 수면 스케줄러 앱 - UI 프로토타입</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            padding: 30px;
+            justify-content: center;
+        }
+
+        .phone-container {
+            width: 375px;
+            height: 812px;
+            background: #000;
+            border-radius: 40px;
+            padding: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: #f8f9fa;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .status-bar {
+            height: 44px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .app-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .baby-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* 홈 화면 스타일 */
+        .home-content {
+            padding: 20px;
+            height: calc(100% - 44px - 85px - 70px);
+            overflow-y: auto;
+        }
+
+        .next-schedule-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .countdown-circle {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .countdown-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .countdown-time {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .countdown-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            flex: 1;
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .quick-btn-icon {
+            font-size: 30px;
+            margin-bottom: 5px;
+        }
+
+        .quick-btn-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .today-timeline {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .timeline-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .timeline-time {
+            position: absolute;
+            left: 0;
+            font-size: 12px;
+            color: #666;
+            width: 35px;
+        }
+
+        .timeline-content {
+            flex: 1;
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 10px;
+            border-left: 3px solid #667eea;
+        }
+
+        .timeline-content.sleep {
+            border-left-color: #764ba2;
+            background: #f3e5f5;
+        }
+
+        .timeline-content.feed {
+            border-left-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .timeline-content.play {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+        }
+
+        /* 스케줄 편집 화면 */
+        .schedule-edit-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .wake-time-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-picker {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+
+        .schedule-list {
+            padding: 20px;
+            height: calc(100% - 44px - 85px - 140px - 70px);
+            overflow-y: auto;
+        }
+
+        .schedule-item {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: move;
+        }
+
+        .schedule-item-time {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .schedule-item-activity {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .schedule-item-duration {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .drag-handle {
+            color: #ccc;
+            font-size: 20px;
+        }
+
+        /* 통계 화면 */
+        .stats-tabs {
+            display: flex;
+            background: white;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .stats-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            background: #f0f0f0;
+        }
+
+        .stats-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stats-content {
+            padding: 20px;
+            height: calc(100% - 44px - 85px - 50px - 70px);
+            overflow-y: auto;
+        }
+
+        .stats-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stats-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stats-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .stats-chart {
+            height: 200px;
+            background: linear-gradient(to top, #f0f0f0, transparent);
+            border-radius: 10px;
+            position: relative;
+            margin-top: 20px;
+        }
+
+        .chart-bar {
+            position: absolute;
+            bottom: 0;
+            width: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 5px 5px 0 0;
+        }
+
+        /* 하단 네비게이션 */
+        .bottom-nav {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            border-radius: 0 0 30px 30px;
+        }
+
+        .nav-item {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+            color: #999;
+        }
+
+        .nav-item.active .nav-icon {
+            color: #667eea;
+        }
+
+        .nav-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .nav-item.active .nav-label {
+            color: #667eea;
+        }
+
+        /* 플로팅 액션 버튼 */
+        .fab {
+            position: absolute;
+            bottom: 90px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+        }
+
+        /* 프로필 설정 화면 */
+        .profile-content {
+            padding: 20px;
+            height: calc(100% - 44px - 85px - 70px);
+            overflow-y: auto;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            color: white;
+        }
+
+        .profile-field {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .field-value {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .field-input {
+            width: 100%;
+            border: none;
+            font-size: 16px;
+            padding: 5px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 홈 화면 -->
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>🔋 100%</span>
+            </div>
+            
+            <div class="app-header">
+                <div class="app-title">오늘의 수면 스케줄</div>
+                <div class="baby-info">👶 민준이 (4개월 7일)</div>
+            </div>
+
+            <div class="home-content">
+                <div class="next-schedule-card">
+                    <div class="countdown-circle">
+                        <svg width="150" height="150">
+                            <circle cx="75" cy="75" r="70" fill="none" stroke="#f0f0f0" stroke-width="8"/>
+                            <circle cx="75" cy="75" r="70" fill="none" stroke="url(#gradient)" stroke-width="8" 
+                                    stroke-dasharray="440" stroke-dashoffset="110" stroke-linecap="round"
+                                    transform="rotate(-90 75 75)"/>
+                            <defs>
+                                <linearGradient id="gradient">
+                                    <stop offset="0%" stop-color="#667eea"/>
+                                    <stop offset="100%" stop-color="#764ba2"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                        <div class="countdown-text">
+                            <div class="countdown-time">45분</div>
+                            <div class="countdown-label">다음 낮잠까지</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; color: #666;">
+                        오전 10:30 낮잠 예정
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <div class="quick-btn">
+                        <div class="quick-btn-icon">😴</div>
+                        <div class="quick-btn-label">수면 시작</div>
+                    </div>
+                    <div class="quick-btn">
+                        <div class="quick-btn-icon">🍼</div>
+                        <div class="quick-btn-label">수유 기록</div>
+                    </div>
+                    <div class="quick-btn">
+                        <div class="quick-btn-icon">👶</div>
+                        <div class="quick-btn-label">기저귀</div>
+                    </div>
+                </div>
+
+                <div class="today-timeline">
+                    <div class="timeline-title">오늘의 일과</div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">07:00</div>
+                        <div class="timeline-content">
+                            <strong>기상</strong> 및 수유
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">08:50</div>
+                        <div class="timeline-content sleep">
+                            <strong>낮잠 1</strong> (1시간 10분)
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">10:00</div>
+                        <div class="timeline-content">
+                            기상
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">10:45</div>
+                        <div class="timeline-content feed">
+                            <strong>수유</strong>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">12:15</div>
+                        <div class="timeline-content sleep">
+                            <strong>낮잠 2</strong> (1시간 45분)
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-time">14:00</div>
+                        <div class="timeline-content feed">
+                            기상 및 <strong>수유</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="fab">+</div>
+
+            <div class="bottom-nav">
+                <div class="nav-item active">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">홈</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">스케줄</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">통계</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">설정</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. 스케줄 편집 화면 -->
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>🔋 100%</span>
+            </div>
+            
+            <div class="app-header">
+                <div class="app-title">일과 스케줄 편집</div>
+                <div class="baby-info">👶 민준이 (4개월 7일)</div>
+            </div>
+
+            <div class="schedule-edit-header">
+                <div class="wake-time-input">
+                    <span>기상 시간</span>
+                    <input type="text" class="time-picker" value="07:00" />
+                </div>
+                <div style="font-size: 12px; color: #666;">
+                    기상 시간을 입력하면 하루 일과가 자동으로 생성됩니다
+                </div>
+            </div>
+
+            <div class="schedule-list">
+                <div class="schedule-item">
+                    <div>
+                        <div class="schedule-item-time">07:00</div>
+                        <div class="schedule-item-activity">기상 및 수유</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+                
+                <div class="schedule-item" style="background: #f3e5f5;">
+                    <div>
+                        <div class="schedule-item-time">08:50 - 10:00</div>
+                        <div class="schedule-item-activity">낮잠 1</div>
+                        <div class="schedule-item-duration">1시간 10분</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item">
+                    <div>
+                        <div class="schedule-item-time">10:45</div>
+                        <div class="schedule-item-activity">수유</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item" style="background: #f3e5f5;">
+                    <div>
+                        <div class="schedule-item-time">12:15 - 14:00</div>
+                        <div class="schedule-item-activity">낮잠 2</div>
+                        <div class="schedule-item-duration">1시간 45분</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item">
+                    <div>
+                        <div class="schedule-item-time">14:00</div>
+                        <div class="schedule-item-activity">기상 및 수유</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item" style="background: #f3e5f5;">
+                    <div>
+                        <div class="schedule-item-time">16:15 - 17:00</div>
+                        <div class="schedule-item-activity">낮잠 3</div>
+                        <div class="schedule-item-duration">45분</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item">
+                    <div>
+                        <div class="schedule-item-time">18:15</div>
+                        <div class="schedule-item-activity">마지막 수유</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+
+                <div class="schedule-item" style="background: #e3f2fd;">
+                    <div>
+                        <div class="schedule-item-time">19:00</div>
+                        <div class="schedule-item-activity">취침</div>
+                    </div>
+                    <div class="drag-handle">≡</div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">홈</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">스케줄</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">통계</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">설정</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. 통계 화면 -->
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>🔋 100%</span>
+            </div>
+            
+            <div class="app-header">
+                <div class="app-title">수면 통계</div>
+                <div class="baby-info">👶 민준이 (4개월 7일)</div>
+            </div>
+
+            <div class="stats-tabs">
+                <div class="stats-tab active">일간</div>
+                <div class="stats-tab">주간</div>
+                <div class="stats-tab">월간</div>
+            </div>
+
+            <div class="stats-content">
+                <div class="stats-card">
+                    <div class="stats-value">14시간 30분</div>
+                    <div class="stats-label">오늘 총 수면 시간</div>
+                </div>
+
+                <div style="display: flex; gap: 15px;">
+                    <div class="stats-card" style="flex: 1;">
+                        <div class="stats-value" style="font-size: 24px;">3회</div>
+                        <div class="stats-label">낮잠 횟수</div>
+                    </div>
+                    <div class="stats-card" style="flex: 1;">
+                        <div class="stats-value" style="font-size: 24px;">10시간</div>
+                        <div class="stats-label">밤잠 시간</div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div style="font-size: 16px; font-weight: 600;">주간 수면 패턴</div>
+                        <div style="font-size: 12px; color: #999;">최근 7일</div>
+                    </div>
+                    <div class="stats-chart">
+                        <div class="chart-bar" style="left: 10px; height: 80%;"></div>
+                        <div class="chart-bar" style="left: 60px; height: 75%;"></div>
+                        <div class="chart-bar" style="left: 110px; height: 85%;"></div>
+                        <div class="chart-bar" style="left: 160px; height: 70%;"></div>
+                        <div class="chart-bar" style="left: 210px; height: 90%;"></div>
+                        <div class="chart-bar" style="left: 260px; height: 85%;"></div>
+                        <div class="chart-bar" style="left: 310px; height: 88%;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 10px; color: #999;">
+                        <span>월</span>
+                        <span>화</span>
+                        <span>수</span>
+                        <span>목</span>
+                        <span>금</span>
+                        <span>토</span>
+                        <span>일</span>
+                    </div>
+                </div>
+
+                <div class="stats-card" style="background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 600; color: #667eea;">수면 목표 달성률</div>
+                            <div style="font-size: 14px; color: #666; margin-top: 5px;">권장: 14-15시간</div>
+                        </div>
+                        <div style="font-size: 36px; font-weight: bold; color: #667eea;">97%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">홈</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">스케줄</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">통계</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">설정</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. 프로필/설정 화면 -->
+    <div class="phone-container">
+        <div class="phone-screen">
+            <div class="status-bar">
+                <span>9:41</span>
+                <span>🔋 100%</span>
+            </div>
+            
+            <div class="app-header">
+                <div class="app-title">아기 프로필</div>
+                <div class="baby-info">설정 및 관리</div>
+            </div>
+
+            <div class="profile-content">
+                <div class="profile-avatar">👶</div>
+                
+                <div class="profile-field">
+                    <div class="field-label">이름</div>
+                    <input type="text" class="field-input" value="민준이" />
+                </div>
+
+                <div class="profile-field">
+                    <div class="field-label">생년월일</div>
+                    <div class="field-value">2024년 7월 1일</div>
+                </div>
+
+                <div class="profile-field">
+                    <div class="field-label">출생 주수</div>
+                    <div class="field-value">39주 (정상 출산)</div>
+                </div>
+
+                <div class="profile-field">
+                    <div class="field-label">현재 월령</div>
+                    <div class="field-value">4개월 7일 (생후 127일)</div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <div style="font-size: 14px; font-weight: 600; margin-bottom: 15px; color: #666;">알림 설정</div>
+                    
+                    <div class="profile-field">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 16px;">다음 일정 알림</div>
+                                <div style="font-size: 12px; color: #999; margin-top: 5px;">10분 전 알림</div>
+                            </div>
+                            <div style="width: 50px; height: 30px; background: #667eea; border-radius: 15px; position: relative;">
+                                <div style="width: 26px; height: 26px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-size: 16px;">수면 기록 리마인더</div>
+                                <div style="font-size: 12px; color: #999; margin-top: 5px;">기록 누락 시 알림</div>
+                            </div>
+                            <div style="width: 50px; height: 30px; background: #667eea; border-radius: 15px; position: relative;">
+                                <div style="width: 26px; height: 26px; background: white; border-radius: 50%; position: absolute; right: 2px; top: 2px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bottom-nav">
+                <div class="nav-item">
+                    <div class="nav-icon">🏠</div>
+                    <div class="nav-label">홈</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📅</div>
+                    <div class="nav-label">스케줄</div>
+                </div>
+                <div class="nav-item">
+                    <div class="nav-icon">📊</div>
+                    <div class="nav-label">통계</div>
+                </div>
+                <div class="nav-item active">
+                    <div class="nav-icon">👤</div>
+                    <div class="nav-label">설정</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
