@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'providers/baby_provider.dart';
 import 'providers/schedule_provider.dart';
 import 'providers/statistics_provider.dart';
@@ -8,8 +9,9 @@ import 'providers/sleep_tracking_provider.dart';
 import 'providers/community_provider.dart';
 import 'screens/main_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('ko_KR', null);
   runApp(const BabySleepApp());
 }
 
