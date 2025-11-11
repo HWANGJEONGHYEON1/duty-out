@@ -121,7 +121,7 @@ class StatisticsProvider with ChangeNotifier {
         .where((record) =>
             record.startTime.isAfter(todayStart) &&
             record.startTime.isBefore(todayEnd))
-        .fold(0, (sum, record) => sum + record.durationMinutes);
+        .fold<int>(0, (sum, record) => sum + record.durationMinutes);
   }
 
   int getNapCount() {
@@ -147,7 +147,7 @@ class StatisticsProvider with ChangeNotifier {
             record.type == 'night' &&
             record.startTime.isAfter(todayStart) &&
             record.startTime.isBefore(todayEnd))
-        .fold(0, (sum, record) => sum + record.durationMinutes);
+        .fold<int>(0, (sum, record) => sum + record.durationMinutes);
   }
 
   List<int> getWeeklySleepData() {
@@ -164,7 +164,7 @@ class StatisticsProvider with ChangeNotifier {
           .where((record) =>
               record.startTime.isAfter(dayStart) &&
               record.startTime.isBefore(dayEnd))
-          .fold(0, (sum, record) => sum + record.durationMinutes);
+          .fold<int>(0, (sum, record) => sum + record.durationMinutes);
 
       weeklyData.add(totalMinutes);
     }
