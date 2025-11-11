@@ -1,10 +1,16 @@
 import 'package:flutter/foundation.dart';
 import '../models/community_post.dart';
+import '../models/comment.dart';
 
 class CommunityProvider with ChangeNotifier {
   List<CommunityPost> _posts = [];
+  Map<String, List<Comment>> _comments = {};
 
   List<CommunityPost> get posts => _posts;
+
+  List<Comment> getComments(String postId) {
+    return _comments[postId] ?? [];
+  }
 
   void initializeMockData() {
     final now = DateTime.now();
@@ -37,6 +43,36 @@ class CommunityProvider with ChangeNotifier {
         comments: 15,
       ),
     ];
+
+    // Mock comments data
+    _comments = {
+      '1': [
+        Comment(
+          id: 'c1',
+          postId: '1',
+          content: '축하드려요! 수면교육 방법 공유해주시면 감사하겠습니다.',
+          author: '익명10',
+          createdAt: now.subtract(const Duration(hours: 1)),
+        ),
+        Comment(
+          id: 'c2',
+          postId: '1',
+          content: '저도 수면교육 시작하려고 하는데 팁 좀 알려주세요!',
+          author: '익명11',
+          createdAt: now.subtract(const Duration(minutes: 30)),
+        ),
+      ],
+      '2': [
+        Comment(
+          id: 'c3',
+          postId: '2',
+          content: '저희 아기도 똑같았는데 암막커튼 치니까 좀 나아졌어요.',
+          author: '익명12',
+          createdAt: now.subtract(const Duration(hours: 3)),
+        ),
+      ],
+    };
+
     notifyListeners();
   }
 
@@ -85,6 +121,78 @@ class CommunityProvider with ChangeNotifier {
         likes: _posts[index].likes + 1,
         comments: _posts[index].comments,
       );
+      notifyListeners();
+    }
+  }
+
+  // Comment methods
+  void addComment(String postId, String content, String author) {
+    final newComment = Comment(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      postId: postId,
+      content: content,
+      author: author,
+      createdAt: DateTime.now(),
+    );
+
+    if (_comments[postId] == null) {
+      _comments[postId] = [];
+    }
+    _comments[postId]!.add(newComment);
+
+    // Update comment count
+    final postIndex = _posts.indexWhere((post) => post.id == postId);
+    if (postIndex != -1) {
+      _posts[postIndex] = CommunityPost(
+        id: _posts[postIndex].id,
+        title: _posts[postIndex].title,
+        content: _posts[postIndex].content,
+        author: _posts[postIndex].author,
+        createdAt: _posts[postIndex].createdAt,
+        likes: _posts[postIndex].likes,
+        comments: _posts[postIndex].comments + 1,
+      );
+    }
+
+    notifyListeners();
+  }
+
+  void updateComment(String commentId, String postId, String content) {
+    final comments = _comments[postId];
+    if (comments != null) {
+      final index = comments.indexWhere((c) => c.id == commentId);
+      if (index != -1) {
+        comments[index] = Comment(
+          id: commentId,
+          postId: postId,
+          content: content,
+          author: comments[index].author,
+          createdAt: comments[index].createdAt,
+        );
+        notifyListeners();
+      }
+    }
+  }
+
+  void deleteComment(String commentId, String postId) {
+    final comments = _comments[postId];
+    if (comments != null) {
+      comments.removeWhere((c) => c.id == commentId);
+
+      // Update comment count
+      final postIndex = _posts.indexWhere((post) => post.id == postId);
+      if (postIndex != -1) {
+        _posts[postIndex] = CommunityPost(
+          id: _posts[postIndex].id,
+          title: _posts[postIndex].title,
+          content: _posts[postIndex].content,
+          author: _posts[postIndex].author,
+          createdAt: _posts[postIndex].createdAt,
+          likes: _posts[postIndex].likes,
+          comments: _posts[postIndex].comments - 1,
+        );
+      }
+
       notifyListeners();
     }
   }

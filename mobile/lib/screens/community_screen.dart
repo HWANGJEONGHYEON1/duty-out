@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/community_provider.dart';
 import '../models/community_post.dart';
+import 'community_post_detail_screen.dart';
 
 class CommunityScreen extends StatelessWidget {
   const CommunityScreen({Key? key}) : super(key: key);
@@ -113,7 +114,14 @@ class CommunityScreen extends StatelessWidget {
 
   Widget _buildPostCard(BuildContext context, CommunityPost post) {
     return GestureDetector(
-      onTap: () => _showPostDetail(context, post),
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CommunityPostDetailScreen(post: post),
+          ),
+        );
+      },
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
         decoration: BoxDecoration(
@@ -289,75 +297,6 @@ class CommunityScreen extends StatelessWidget {
               }
             },
             child: const Text('저장'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showPostDetail(BuildContext context, CommunityPost post) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(post.title),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      post.author,
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    post.timeAgo,
-                    style: TextStyle(fontSize: 11, color: Colors.grey[500]),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 15),
-              Text(
-                post.content,
-                style: const TextStyle(fontSize: 14),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      Provider.of<CommunityProvider>(context, listen: false).likePost(post.id);
-                    },
-                    icon: const Icon(Icons.favorite_border, size: 16),
-                    label: Text('좋아요 ${post.likes}'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF667EEA),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  OutlinedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.comment_outlined, size: 16),
-                    label: Text('댓글 ${post.comments}'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('닫기'),
           ),
         ],
       ),
