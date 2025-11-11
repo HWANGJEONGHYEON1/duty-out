@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import '../models/sleep_record.dart';
+import '../models/feeding_record.dart';
 
 class StatisticsProvider with ChangeNotifier {
   List<SleepRecord> _sleepRecords = [];
+  List<FeedingRecord> _feedingRecords = [];
   String _selectedPeriod = 'daily'; // 'daily', 'weekly', 'monthly'
 
   List<SleepRecord> get sleepRecords => _sleepRecords;
+  List<FeedingRecord> get feedingRecords => _feedingRecords;
   String get selectedPeriod => _selectedPeriod;
 
   void initializeMockData() {
@@ -57,6 +60,47 @@ class StatisticsProvider with ChangeNotifier {
         startTime: DateTime(yesterday.year, yesterday.month, yesterday.day, 13, 0),
         endTime: DateTime(yesterday.year, yesterday.month, yesterday.day, 14, 45),
         type: 'nap',
+      ),
+    ];
+
+    _feedingRecords = [
+      // Today
+      FeedingRecord(
+        id: 'f1',
+        time: DateTime(today.year, today.month, today.day, 6, 30),
+        amount: 180,
+        type: 'bottle',
+      ),
+      FeedingRecord(
+        id: 'f2',
+        time: DateTime(today.year, today.month, today.day, 10, 0),
+        amount: 150,
+        type: 'bottle',
+      ),
+      FeedingRecord(
+        id: 'f3',
+        time: DateTime(today.year, today.month, today.day, 14, 0),
+        amount: 180,
+        type: 'bottle',
+      ),
+      FeedingRecord(
+        id: 'f4',
+        time: DateTime(today.year, today.month, today.day, 17, 30),
+        amount: 200,
+        type: 'bottle',
+      ),
+      // Yesterday
+      FeedingRecord(
+        id: 'f5',
+        time: DateTime(yesterday.year, yesterday.month, yesterday.day, 7, 0),
+        amount: 170,
+        type: 'bottle',
+      ),
+      FeedingRecord(
+        id: 'f6',
+        time: DateTime(yesterday.year, yesterday.month, yesterday.day, 11, 0),
+        amount: 160,
+        type: 'bottle',
       ),
     ];
 
