@@ -1,16 +1,282 @@
 import 'package:flutter/foundation.dart';
 import '../models/community_post.dart';
 import '../models/comment.dart';
+import '../services/community_api_service.dart';
 
+/// 커뮤니티 Provider
+///
+/// 커뮤니티 게시글 및 댓글을 관리하고, API와 연동합니다.
 class CommunityProvider with ChangeNotifier {
+  final CommunityApiService _communityApiService = CommunityApiService();
+
   List<CommunityPost> _posts = [];
   Map<String, List<Comment>> _comments = {};
+  bool _isLoading = false;
+  String? _error;
 
   List<CommunityPost> get posts => _posts;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   List<Comment> getComments(String postId) {
     return _comments[postId] ?? [];
   }
+
+  // ========== 게시글 관련 ==========
+
+  /// 게시글 목록 조회
+  ///
+  /// [page] 페이지 번호
+  /// [size] 페이지 크기
+  /// [search] 검색 키워드
+  Future<void> loadPosts({
+    int page = 0,
+    int size = 20,
+    String? search,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _communityApiService.getPosts(
+        page: page,
+        size: size,
+        search: search,
+      );
+
+      // 응답 파싱
+      final List<dynamic> content = response['content'];
+      _posts = content.map((item) => _parseCommunityPost(item)).toList();
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '게시글 목록 조회 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 게시글 생성
+  Future<void> addPost(String title, String content) async {
+    try {
+      final response = await _communityApiService.createPost(
+        title: title,
+        content: content,
+      );
+
+      final newPost = _parseCommunityPost(response);
+      _posts.insert(0, newPost); // 맨 앞에 추가
+
+      notifyListeners();
+    } catch (e) {
+      _error = '게시글 생성 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 게시글 수정
+  Future<void> updatePost(String postId, String title, String content) async {
+    try {
+      final response = await _communityApiService.updatePost(
+        postId: int.parse(postId),
+        title: title,
+        content: content,
+      );
+
+      final updatedPost = _parseCommunityPost(response);
+
+      final index = _posts.indexWhere((post) => post.id == postId);
+      if (index != -1) {
+        _posts[index] = updatedPost;
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = '게시글 수정 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 게시글 삭제
+  Future<void> deletePost(String postId) async {
+    try {
+      await _communityApiService.deletePost(postId: int.parse(postId));
+
+      _posts.removeWhere((post) => post.id == postId);
+      _comments.remove(postId); // 댓글도 함께 삭제
+
+      notifyListeners();
+    } catch (e) {
+      _error = '게시글 삭제 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 게시글 좋아요
+  Future<void> likePost(String postId) async {
+    try {
+      final response =
+          await _communityApiService.likePost(postId: int.parse(postId));
+
+      final updatedPost = _parseCommunityPost(response);
+
+      final index = _posts.indexWhere((post) => post.id == postId);
+      if (index != -1) {
+        _posts[index] = updatedPost;
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = '좋아요 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  // ========== 댓글 관련 ==========
+
+  /// 댓글 목록 조회
+  Future<void> loadComments(String postId) async {
+    try {
+      final response =
+          await _communityApiService.getComments(postId: int.parse(postId));
+
+      _comments[postId] = response.map((item) => _parseComment(item)).toList();
+
+      notifyListeners();
+    } catch (e) {
+      _error = '댓글 조회 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 댓글 생성
+  Future<void> addComment(String postId, String content, String author) async {
+    try {
+      final response = await _communityApiService.createComment(
+        postId: int.parse(postId),
+        content: content,
+      );
+
+      final newComment = _parseComment(response);
+
+      if (_comments[postId] == null) {
+        _comments[postId] = [];
+      }
+      _comments[postId]!.add(newComment);
+
+      // 게시글의 댓글 수 증가
+      final postIndex = _posts.indexWhere((post) => post.id == postId);
+      if (postIndex != -1) {
+        _posts[postIndex] = CommunityPost(
+          id: _posts[postIndex].id,
+          title: _posts[postIndex].title,
+          content: _posts[postIndex].content,
+          author: _posts[postIndex].author,
+          createdAt: _posts[postIndex].createdAt,
+          likes: _posts[postIndex].likes,
+          comments: _posts[postIndex].comments + 1,
+        );
+      }
+
+      notifyListeners();
+    } catch (e) {
+      _error = '댓글 생성 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 댓글 수정
+  Future<void> updateComment(
+      String postId, String commentId, String content) async {
+    try {
+      final response = await _communityApiService.updateComment(
+        commentId: int.parse(commentId),
+        content: content,
+      );
+
+      final updatedComment = _parseComment(response);
+
+      final comments = _comments[postId];
+      if (comments != null) {
+        final index = comments.indexWhere((c) => c.id == commentId);
+        if (index != -1) {
+          comments[index] = updatedComment;
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      _error = '댓글 수정 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 댓글 삭제
+  Future<void> deleteComment(String postId, String commentId) async {
+    try {
+      await _communityApiService.deleteComment(commentId: int.parse(commentId));
+
+      final comments = _comments[postId];
+      if (comments != null) {
+        comments.removeWhere((c) => c.id == commentId);
+
+        // 게시글의 댓글 수 감소
+        final postIndex = _posts.indexWhere((post) => post.id == postId);
+        if (postIndex != -1) {
+          _posts[postIndex] = CommunityPost(
+            id: _posts[postIndex].id,
+            title: _posts[postIndex].title,
+            content: _posts[postIndex].content,
+            author: _posts[postIndex].author,
+            createdAt: _posts[postIndex].createdAt,
+            likes: _posts[postIndex].likes,
+            comments: _posts[postIndex].comments - 1,
+          );
+        }
+
+        notifyListeners();
+      }
+    } catch (e) {
+      _error = '댓글 삭제 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  // ========== 파싱 메서드 ==========
+
+  /// API 응답을 CommunityPost 모델로 변환
+  CommunityPost _parseCommunityPost(Map<String, dynamic> data) {
+    return CommunityPost(
+      id: data['id'].toString(),
+      title: data['title'],
+      content: data['content'],
+      author: data['anonymousAuthor'],
+      createdAt: DateTime.parse(data['createdAt']),
+      likes: data['likeCount'] ?? 0,
+      comments: data['commentCount'] ?? 0,
+    );
+  }
+
+  /// API 응답을 Comment 모델로 변환
+  Comment _parseComment(Map<String, dynamic> data) {
+    return Comment(
+      id: data['id'].toString(),
+      postId: data['postId'].toString(),
+      content: data['content'],
+      author: data['anonymousAuthor'],
+      createdAt: DateTime.parse(data['createdAt']),
+    );
+  }
+
+  // ========== Mock 데이터 (개발/테스트용) ==========
 
   void initializeMockData() {
     final now = DateTime.now();
@@ -44,31 +310,21 @@ class CommunityProvider with ChangeNotifier {
       ),
     ];
 
-    // Mock comments data
     _comments = {
       '1': [
         Comment(
-          id: 'c1',
+          id: '1',
           postId: '1',
-          content: '축하드려요! 수면교육 방법 공유해주시면 감사하겠습니다.',
-          author: '익명10',
+          content: '축하드려요! 저희도 곧 시작하려고 하는데 팁 좀 주세요!',
+          author: '익명4',
           createdAt: now.subtract(const Duration(hours: 1)),
         ),
         Comment(
-          id: 'c2',
+          id: '2',
           postId: '1',
-          content: '저도 수면교육 시작하려고 하는데 팁 좀 알려주세요!',
-          author: '익명11',
+          content: '대단하세요! 2주만에 성공하다니...',
+          author: '익명5',
           createdAt: now.subtract(const Duration(minutes: 30)),
-        ),
-      ],
-      '2': [
-        Comment(
-          id: 'c3',
-          postId: '2',
-          content: '저희 아기도 똑같았는데 암막커튼 치니까 좀 나아졌어요.',
-          author: '익명12',
-          createdAt: now.subtract(const Duration(hours: 3)),
         ),
       ],
     };
@@ -76,124 +332,9 @@ class CommunityProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void addPost(String title, String content, String author) {
-    final newPost = CommunityPost(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      content: content,
-      author: author,
-      createdAt: DateTime.now(),
-    );
-    _posts.insert(0, newPost);
+  /// 에러 초기화
+  void clearError() {
+    _error = null;
     notifyListeners();
-  }
-
-  void updatePost(String id, String title, String content) {
-    final index = _posts.indexWhere((post) => post.id == id);
-    if (index != -1) {
-      _posts[index] = CommunityPost(
-        id: id,
-        title: title,
-        content: content,
-        author: _posts[index].author,
-        createdAt: _posts[index].createdAt,
-        likes: _posts[index].likes,
-        comments: _posts[index].comments,
-      );
-      notifyListeners();
-    }
-  }
-
-  void deletePost(String id) {
-    _posts.removeWhere((post) => post.id == id);
-    notifyListeners();
-  }
-
-  void likePost(String id) {
-    final index = _posts.indexWhere((post) => post.id == id);
-    if (index != -1) {
-      _posts[index] = CommunityPost(
-        id: id,
-        title: _posts[index].title,
-        content: _posts[index].content,
-        author: _posts[index].author,
-        createdAt: _posts[index].createdAt,
-        likes: _posts[index].likes + 1,
-        comments: _posts[index].comments,
-      );
-      notifyListeners();
-    }
-  }
-
-  // Comment methods
-  void addComment(String postId, String content, String author) {
-    final newComment = Comment(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      postId: postId,
-      content: content,
-      author: author,
-      createdAt: DateTime.now(),
-    );
-
-    if (_comments[postId] == null) {
-      _comments[postId] = [];
-    }
-    _comments[postId]!.add(newComment);
-
-    // Update comment count
-    final postIndex = _posts.indexWhere((post) => post.id == postId);
-    if (postIndex != -1) {
-      _posts[postIndex] = CommunityPost(
-        id: _posts[postIndex].id,
-        title: _posts[postIndex].title,
-        content: _posts[postIndex].content,
-        author: _posts[postIndex].author,
-        createdAt: _posts[postIndex].createdAt,
-        likes: _posts[postIndex].likes,
-        comments: _posts[postIndex].comments + 1,
-      );
-    }
-
-    notifyListeners();
-  }
-
-  void updateComment(String commentId, String postId, String content) {
-    final comments = _comments[postId];
-    if (comments != null) {
-      final index = comments.indexWhere((c) => c.id == commentId);
-      if (index != -1) {
-        comments[index] = Comment(
-          id: commentId,
-          postId: postId,
-          content: content,
-          author: comments[index].author,
-          createdAt: comments[index].createdAt,
-        );
-        notifyListeners();
-      }
-    }
-  }
-
-  void deleteComment(String commentId, String postId) {
-    final comments = _comments[postId];
-    if (comments != null) {
-      comments.removeWhere((c) => c.id == commentId);
-
-      // Update comment count
-      final postIndex = _posts.indexWhere((post) => post.id == postId);
-      if (postIndex != -1) {
-        _posts[postIndex] = CommunityPost(
-          id: _posts[postIndex].id,
-          title: _posts[postIndex].title,
-          content: _posts[postIndex].content,
-          author: _posts[postIndex].author,
-          createdAt: _posts[postIndex].createdAt,
-          likes: _posts[postIndex].likes,
-          comments: _posts[postIndex].comments - 1,
-        );
-      }
-
-      notifyListeners();
-    }
   }
 }
