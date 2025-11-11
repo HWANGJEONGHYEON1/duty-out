@@ -26,9 +26,19 @@ public enum ErrorCode {
 
     // User/Auth 관련
     USER_NOT_FOUND("USER_001", "사용자를 찾을 수 없습니다."),
+    USER_ALREADY_EXISTS("USER_002", "이미 존재하는 사용자입니다."),
     UNAUTHORIZED("AUTH_001", "인증이 필요합니다."),
     FORBIDDEN("AUTH_002", "접근 권한이 없습니다."),
     INVALID_TOKEN("AUTH_003", "유효하지 않은 토큰입니다."),
+
+    // Feeding Record 관련
+    FEEDING_RECORD_NOT_FOUND("FEEDING_001", "수유 기록을 찾을 수 없습니다."),
+
+    // Community 관련
+    POST_NOT_FOUND("COMMUNITY_001", "게시글을 찾을 수 없습니다."),
+    COMMENT_NOT_FOUND("COMMUNITY_002", "댓글을 찾을 수 없습니다."),
+    UNAUTHORIZED_POST_ACCESS("COMMUNITY_003", "게시글에 대한 권한이 없습니다."),
+    UNAUTHORIZED_COMMENT_ACCESS("COMMUNITY_004", "댓글에 대한 권한이 없습니다."),
 
     // Common
     INVALID_INPUT("COMMON_001", "잘못된 입력값입니다."),
