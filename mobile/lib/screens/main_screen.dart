@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'schedule_screen.dart';
-import 'statistics_screen.dart';
+import 'new_home_screen.dart';
+import 'new_statistics_screen.dart';
+import 'community_screen.dart';
 import 'profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -15,9 +15,9 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    HomeScreen(),
-    ScheduleScreen(),
-    StatisticsScreen(),
+    NewHomeScreen(),
+    NewStatisticsScreen(),
+    CommunityScreen(),
     ProfileScreen(),
   ];
 
@@ -42,9 +42,9 @@ class _MainScreenState extends State<MainScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, '🏠', '홈'),
-                _buildNavItem(1, '📅', '스케줄'),
-                _buildNavItem(2, '📊', '통계'),
+                _buildNavItem(0, '📅', '스케줄'),
+                _buildNavItem(1, '📊', '통계'),
+                _buildNavItem(2, '💬', '커뮤니티'),
                 _buildNavItem(3, '👤', '설정'),
               ],
             ),

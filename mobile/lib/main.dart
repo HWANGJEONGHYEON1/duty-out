@@ -5,6 +5,7 @@ import 'providers/baby_provider.dart';
 import 'providers/schedule_provider.dart';
 import 'providers/statistics_provider.dart';
 import 'providers/sleep_tracking_provider.dart';
+import 'providers/community_provider.dart';
 import 'screens/main_screen.dart';
 
 void main() {
@@ -23,6 +24,7 @@ class BabySleepApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ScheduleProvider()..initializeMockData()),
         ChangeNotifierProvider(create: (_) => StatisticsProvider()..initializeMockData()),
         ChangeNotifierProvider(create: (_) => SleepTrackingProvider()),
+        ChangeNotifierProvider(create: (_) => CommunityProvider()..initializeMockData()),
       ],
       child: MaterialApp(
         title: '아기 수면 스케줄러',
