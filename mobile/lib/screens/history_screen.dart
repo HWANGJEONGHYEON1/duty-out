@@ -131,7 +131,7 @@ class HistoryScreen extends StatelessWidget {
       dateLabel = DateFormat('M월 d일 (E)', 'ko').format(date);
     }
 
-    final totalMinutes = records.fold(0, (sum, record) => sum + record.durationMinutes);
+    final totalMinutes = records.fold<int>(0, (sum, record) => sum + record.durationMinutes);
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
 

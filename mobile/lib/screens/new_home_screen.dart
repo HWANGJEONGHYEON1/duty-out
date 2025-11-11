@@ -193,13 +193,24 @@ class NewHomeScreen extends StatelessWidget {
     final dateFormat = DateFormat('M월 d일 EEEE', 'ko_KR');
     final statistics = context.watch<StatisticsProvider>();
 
-    // 오늘의 통계 계산 (목 데이터 사용)
-    final todaySleep = statistics.sleepRecords.isNotEmpty
-        ? statistics.sleepRecords.first.durationMinutes
-        : 0;
-    final todayFeeding = statistics.feedingRecords.isNotEmpty
-        ? statistics.feedingRecords.first.amount
-        : 0;
+    // 오늘의 통계 계산
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
+
+    // 오늘의 총 수면 시간
+    final todaySleep = statistics.sleepRecords
+        .where((record) =>
+            record.startTime.isAfter(todayStart) &&
+            record.startTime.isBefore(todayEnd))
+        .fold<int>(0, (sum, record) => sum + record.durationMinutes);
+
+    // 오늘의 총 수유량
+    final todayFeeding = statistics.feedingRecords
+        .where((record) =>
+            record.time.isAfter(todayStart) &&
+            record.time.isBefore(todayEnd))
+        .fold<int>(0, (sum, record) => sum + record.amount);
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -300,7 +311,7 @@ class NewHomeScreen extends StatelessWidget {
       final scheduleMinutes = item.time.hour * 60 + item.time.minute;
       if (scheduleMinutes > currentMinutes) {
         nextSchedule = item;
-        minutesUntilNext = scheduleMinutes - currentMinutes;
+        minutesUntilNext = (scheduleMinutes - currentMinutes).toInt();
         break;
       }
     }
@@ -309,7 +320,7 @@ class NewHomeScreen extends StatelessWidget {
     if (nextSchedule == null && scheduleItems.isNotEmpty) {
       nextSchedule = scheduleItems.first;
       final scheduleMinutes = nextSchedule.time.hour * 60 + nextSchedule.time.minute;
-      minutesUntilNext = (24 * 60 - currentMinutes) + scheduleMinutes;
+      minutesUntilNext = ((24 * 60 - currentMinutes) + scheduleMinutes).toInt();
     }
 
     if (nextSchedule == null) {
