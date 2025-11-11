@@ -22,11 +22,11 @@ class BabySleepApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => BabyProvider()..initializeMockData()),
-        ChangeNotifierProvider(create: (_) => ScheduleProvider()..initializeMockData()),
-        ChangeNotifierProvider(create: (_) => StatisticsProvider()..initializeMockData()),
+        ChangeNotifierProvider(create: (_) => BabyProvider()),
+        ChangeNotifierProvider(create: (_) => ScheduleProvider()),
+        ChangeNotifierProvider(create: (_) => StatisticsProvider()),
         ChangeNotifierProvider(create: (_) => SleepTrackingProvider()),
-        ChangeNotifierProvider(create: (_) => CommunityProvider()..initializeMockData()),
+        ChangeNotifierProvider(create: (_) => CommunityProvider()),
       ],
       child: MaterialApp(
         title: '아기 수면 스케줄러',
@@ -35,9 +35,39 @@ class BabySleepApp extends StatelessWidget {
           scaffoldBackgroundColor: const Color(0xFFF8F9FA),
           textTheme: GoogleFonts.notoSansKrTextTheme(),
         ),
-        home: const MainScreen(),
+        home: const AppInitializer(),
         debugShowCheckedModeBanner: false,
       ),
     );
+  }
+}
+
+class AppInitializer extends StatefulWidget {
+  const AppInitializer({Key? key}) : super(key: key);
+
+  @override
+  State<AppInitializer> createState() => _AppInitializerState();
+}
+
+class _AppInitializerState extends State<AppInitializer> {
+  @override
+  void initState() {
+    super.initState();
+    _initializeData();
+  }
+
+  Future<void> _initializeData() async {
+    await Future.delayed(Duration.zero);
+    if (mounted) {
+      context.read<BabyProvider>().initializeMockData();
+      context.read<ScheduleProvider>().initializeMockData();
+      context.read<StatisticsProvider>().initializeMockData();
+      context.read<CommunityProvider>().initializeMockData();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const MainScreen();
   }
 }
