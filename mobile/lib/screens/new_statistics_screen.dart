@@ -33,25 +33,27 @@ class NewStatisticsScreen extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-      child: Column(
-        children: [
-          const Text(
-            '주간 통계',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+      child: Center(
+        child: Column(
+          children: [
+            const Text(
+              '주간 통계',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            const SizedBox(height: 5),
+            Text(
+              baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

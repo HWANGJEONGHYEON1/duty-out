@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/baby_provider.dart';
 import '../providers/schedule_provider.dart';
+import '../providers/statistics_provider.dart';
 
 class NewHomeScreen extends StatelessWidget {
   const NewHomeScreen({Key? key}) : super(key: key);
@@ -13,7 +15,15 @@ class NewHomeScreen extends StatelessWidget {
         children: [
           _buildHeader(context),
           Expanded(
-            child: _buildScheduleList(context),
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildTodaySummaryCard(context),
+                  _buildNextScheduleCard(context),
+                  _buildScheduleList(context),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -33,39 +43,39 @@ class NewHomeScreen extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '오늘의 일과',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+          Column(
+            children: [
+              const Text(
+                '오늘의 일과',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(height: 5),
-                Text(
-                  baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(
-              Icons.info_outline,
-              color: Colors.white,
-              size: 28,
+          Positioned(
+            right: 0,
+            child: IconButton(
+              icon: const Icon(
+                Icons.info_outline,
+                color: Colors.white,
+                size: 28,
+              ),
+              onPressed: () => _showRecommendedInfo(context),
             ),
-            onPressed: () => _showRecommendedInfo(context),
           ),
         ],
       ),
@@ -178,11 +188,202 @@ class NewHomeScreen extends StatelessWidget {
     }
   }
 
+  Widget _buildTodaySummaryCard(BuildContext context) {
+    final now = DateTime.now();
+    final dateFormat = DateFormat('M월 d일 EEEE', 'ko_KR');
+    final statistics = context.watch<StatisticsProvider>();
+
+    // 오늘의 통계 계산 (목 데이터 사용)
+    final todaySleep = statistics.sleepRecords.isNotEmpty
+        ? statistics.sleepRecords.first.durationMinutes
+        : 0;
+    final todayFeeding = statistics.feedingRecords.isNotEmpty
+        ? statistics.feedingRecords.first.amount
+        : 0;
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            dateFormat.format(now),
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF667EEA),
+            ),
+          ),
+          const SizedBox(height: 15),
+          Row(
+            children: [
+              Expanded(
+                child: _buildSummaryItem(
+                  '😴 오늘 수면',
+                  '${(todaySleep / 60).toStringAsFixed(1)}시간',
+                  const Color(0xFF764BA2),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: _buildSummaryItem(
+                  '🍼 오늘 수유',
+                  '${todayFeeding}ml',
+                  const Color(0xFF4CAF50),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[700],
+            ),
+          ),
+          const SizedBox(height: 5),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextScheduleCard(BuildContext context) {
+    final scheduleItems = context.watch<ScheduleProvider>().scheduleItems;
+
+    if (scheduleItems.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    // 현재 시간 기준으로 다음 일정 찾기
+    final now = TimeOfDay.now();
+    final currentMinutes = now.hour * 60 + now.minute;
+
+    dynamic nextSchedule;
+    int minutesUntilNext = 0;
+
+    for (var item in scheduleItems) {
+      final scheduleMinutes = item.time.hour * 60 + item.time.minute;
+      if (scheduleMinutes > currentMinutes) {
+        nextSchedule = item;
+        minutesUntilNext = scheduleMinutes - currentMinutes;
+        break;
+      }
+    }
+
+    // 다음날 첫 일정으로 넘어가는 경우
+    if (nextSchedule == null && scheduleItems.isNotEmpty) {
+      nextSchedule = scheduleItems.first;
+      final scheduleMinutes = nextSchedule.time.hour * 60 + nextSchedule.time.minute;
+      minutesUntilNext = (24 * 60 - currentMinutes) + scheduleMinutes;
+    }
+
+    if (nextSchedule == null) {
+      return const SizedBox.shrink();
+    }
+
+    final hours = minutesUntilNext ~/ 60;
+    final minutes = minutesUntilNext % 60;
+    String timeText = '';
+    if (hours > 0) {
+      timeText = '$hours시간 $minutes분';
+    } else {
+      timeText = '$minutes분';
+    }
+
+    Color borderColor;
+    switch (nextSchedule.type) {
+      case 'sleep':
+        borderColor = const Color(0xFF764BA2);
+        break;
+      case 'feed':
+        borderColor = const Color(0xFF4CAF50);
+        break;
+      case 'play':
+        borderColor = const Color(0xFFFF9800);
+        break;
+      default:
+        borderColor = const Color(0xFF667EEA);
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: borderColor.withOpacity(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            timeText,
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+              color: borderColor,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            '${nextSchedule.activity}까지',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[700],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildScheduleList(BuildContext context) {
     final scheduleItems = context.watch<ScheduleProvider>().scheduleItems;
 
     if (scheduleItems.isEmpty) {
-      return Center(
+      return Container(
+        padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: const [
@@ -206,13 +407,29 @@ class NewHomeScreen extends StatelessWidget {
 
     return Container(
       color: Colors.grey[100],
-      child: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: scheduleItems.length,
-        itemBuilder: (context, index) {
-          final item = scheduleItems[index];
-          return _buildScheduleCard(context, item, index);
-        },
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: 15),
+              child: Text(
+                '오늘의 전체 일정',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF333333),
+                ),
+              ),
+            ),
+          ),
+          ...scheduleItems.asMap().entries.map((entry) {
+            final index = entry.key;
+            final item = entry.value;
+            return _buildScheduleCard(context, item, index);
+          }).toList(),
+        ],
       ),
     );
   }

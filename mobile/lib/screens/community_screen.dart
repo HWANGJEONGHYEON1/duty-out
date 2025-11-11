@@ -58,12 +58,14 @@ class CommunityScreen extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-      child: const Text(
-        '수면 커뮤니티',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
+      child: const Center(
+        child: Text(
+          '수면 커뮤니티',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );
@@ -234,7 +236,7 @@ class CommunityScreen extends StatelessWidget {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(post == null ? '새 글 작성' : '글 수정'),
         content: SingleChildScrollView(
           child: Column(
@@ -263,13 +265,13 @@ class CommunityScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
           TextButton(
             onPressed: () {
               if (titleController.text.isNotEmpty && contentController.text.isNotEmpty) {
-                final provider = context.read<CommunityProvider>();
+                final provider = Provider.of<CommunityProvider>(context, listen: false);
                 if (post == null) {
                   provider.addPost(
                     titleController.text,
@@ -283,7 +285,7 @@ class CommunityScreen extends StatelessWidget {
                     contentController.text,
                   );
                 }
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
               }
             },
             child: const Text('저장'),
@@ -296,7 +298,7 @@ class CommunityScreen extends StatelessWidget {
   void _showPostDetail(BuildContext context, CommunityPost post) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: Text(post.title),
         content: SingleChildScrollView(
           child: Column(
@@ -333,7 +335,7 @@ class CommunityScreen extends StatelessWidget {
                 children: [
                   ElevatedButton.icon(
                     onPressed: () {
-                      context.read<CommunityProvider>().likePost(post.id);
+                      Provider.of<CommunityProvider>(context, listen: false).likePost(post.id);
                     },
                     icon: const Icon(Icons.favorite_border, size: 16),
                     label: Text('좋아요 ${post.likes}'),
@@ -354,7 +356,7 @@ class CommunityScreen extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('닫기'),
           ),
         ],
@@ -365,18 +367,18 @@ class CommunityScreen extends StatelessWidget {
   void _deletePost(BuildContext context, String postId) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('게시글 삭제'),
         content: const Text('이 게시글을 삭제하시겠습니까?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
           TextButton(
             onPressed: () {
-              context.read<CommunityProvider>().deletePost(postId);
-              Navigator.pop(context);
+              Provider.of<CommunityProvider>(context, listen: false).deletePost(postId);
+              Navigator.pop(dialogContext);
             },
             child: const Text('삭제', style: TextStyle(color: Colors.red)),
           ),

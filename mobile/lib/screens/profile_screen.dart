@@ -39,25 +39,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
       ),
       padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
-      child: Column(
-        children: const [
-          Text(
-            '아기 프로필',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
+      child: const Center(
+        child: Column(
+          children: [
+            Text(
+              '아기 프로필',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            '설정 및 관리',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
+            SizedBox(height: 5),
+            Text(
+              '설정 및 관리',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -89,6 +91,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _buildProfileField(
                 '현재 월령',
                 '${baby.ageText} (생후 ${baby.ageInDays}일)',
+              ),
+              const SizedBox(height: 30),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Center(
+                  child: Text(
+                    '아기 정보를 등록해주세요',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 30),
             ],
