@@ -2,6 +2,10 @@ spring:
   application:
     name: duty-out-backend
 
+  # 기본 프로필: 로컬 개발용 (H2 사용)
+  profiles:
+    active: dev
+
   datasource:
     url: jdbc:postgresql://localhost:5432/dutyout
     username: dutyout
