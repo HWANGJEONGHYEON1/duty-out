@@ -276,62 +276,6 @@ class CommunityProvider with ChangeNotifier {
     );
   }
 
-  // ========== Mock 데이터 (개발/테스트용) ==========
-
-  void initializeMockData() {
-    final now = DateTime.now();
-    _posts = [
-      CommunityPost(
-        id: '1',
-        title: '4개월 아기 밤잠 통잠 성공했어요!',
-        content: '드디어 통잠 성공했어요. 수면교육 시작한지 2주만에...',
-        author: '익명1',
-        createdAt: now.subtract(const Duration(hours: 2)),
-        likes: 15,
-        comments: 8,
-      ),
-      CommunityPost(
-        id: '2',
-        title: '낮잠 30분만 자고 깨는데 어떻게 하나요?',
-        content: '6개월 아기인데 낮잠을 30분만 자고 깨요. 어떻게 하면 낮잠을 길게 잘 수 있을까요?',
-        author: '익명2',
-        createdAt: now.subtract(const Duration(hours: 5)),
-        likes: 23,
-        comments: 12,
-      ),
-      CommunityPost(
-        id: '3',
-        title: '수면교육 시작 시기 궁금해요',
-        content: '언제부터 수면교육을 시작하는게 좋을까요? 지금 3개월인데...',
-        author: '익명3',
-        createdAt: now.subtract(const Duration(days: 1)),
-        likes: 18,
-        comments: 15,
-      ),
-    ];
-
-    _comments = {
-      '1': [
-        Comment(
-          id: '1',
-          postId: '1',
-          content: '축하드려요! 저희도 곧 시작하려고 하는데 팁 좀 주세요!',
-          author: '익명4',
-          createdAt: now.subtract(const Duration(hours: 1)),
-        ),
-        Comment(
-          id: '2',
-          postId: '1',
-          content: '대단하세요! 2주만에 성공하다니...',
-          author: '익명5',
-          createdAt: now.subtract(const Duration(minutes: 30)),
-        ),
-      ],
-    };
-
-    notifyListeners();
-  }
-
   /// 에러 초기화
   void clearError() {
     _error = null;
