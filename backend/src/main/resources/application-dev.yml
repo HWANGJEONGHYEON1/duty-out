@@ -5,6 +5,11 @@ spring:
     username: sa
     password:
 
+  # SQL 스크립트 자동 실행 비활성화 (Java 코드로 데이터 로드)
+  sql:
+    init:
+      mode: never
+
   h2:
     console:
       enabled: true
