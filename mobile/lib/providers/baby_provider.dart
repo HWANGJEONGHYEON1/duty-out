@@ -6,18 +6,13 @@ class BabyProvider with ChangeNotifier {
 
   Baby? get baby => _baby;
 
-  void initializeMockData() {
-    _baby = Baby(
-      id: '1',
-      name: '민준이',
-      birthDate: DateTime(2024, 7, 1),
-      birthWeeks: 39,
-    );
-    notifyListeners();
-  }
-
   void updateBaby(Baby baby) {
     _baby = baby;
     notifyListeners();
   }
+
+  // TODO: API 연결 필요
+  // Future<void> loadBaby() async {
+  //   // API 호출로 아기 정보 불러오기
+  // }
 }
