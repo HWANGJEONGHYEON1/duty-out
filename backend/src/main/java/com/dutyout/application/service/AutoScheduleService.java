@@ -277,12 +277,96 @@ public class AutoScheduleService {
         log.info("스케줄 동적 조정 시작 - Baby ID: {}, Item ID: {}",
                 babyId, request.getScheduleItemId());
 
-        // TODO: 동적 조정 로직 구현
-        // 1. 변경된 아이템 찾기
-        // 2. 시간 차이 계산
-        // 3. 이후 모든 아이템 시간 조정
-        // 4. 과피로 방지 체크 (깨시 초과 시 경고)
+        // 1. 아기 정보 조회
+        Baby baby = babyRepository.findById(babyId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BABY_NOT_FOUND));
 
-        throw new UnsupportedOperationException("동적 조정 기능은 곧 구현됩니다.");
+        // 2. 오늘의 일일 스케줄 조회
+        LocalDate today = LocalDate.now();
+        DailySchedule dailySchedule = dailyScheduleRepository.findByBabyIdAndScheduleDate(babyId, today)
+                .orElseThrow(() -> new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND));
+
+        // 3. 변경된 아이템 찾기
+        ScheduleItem changedItem = null;
+        int changedItemIndex = -1;
+        for (int i = 0; i < dailySchedule.getScheduleItems().size(); i++) {
+            ScheduleItem item = dailySchedule.getScheduleItems().get(i);
+            if (item.getId().equals(request.getScheduleItemId())) {
+                changedItem = item;
+                changedItemIndex = i;
+                break;
+            }
+        }
+
+        if (changedItem == null) {
+            throw new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND);
+        }
+
+        // 4. 원래 시간과 새 시간의 차이 계산
+        LocalTime originalTime = changedItem.getScheduledTime();
+        LocalTime newTime;
+
+        if (request.getActualEndTime() != null && changedItem.getDurationMinutes() != null) {
+            // 종료 시간으로부터 실제 지속 시간을 고려하여 시작 시간 계산
+            newTime = request.getActualEndTime().minusMinutes(changedItem.getDurationMinutes());
+        } else if (request.getActualStartTime() != null) {
+            newTime = request.getActualStartTime();
+        } else if (request.getActualDurationMinutes() != null && changedItem.getDurationMinutes() != null) {
+            // 지속 시간만 제공된 경우
+            int timeDifference = request.getActualDurationMinutes() - changedItem.getDurationMinutes();
+            newTime = originalTime.plusMinutes(timeDifference);
+            changedItem.updateDuration(request.getActualDurationMinutes());
+        } else {
+            throw new BusinessException(ErrorCode.INVALID_INPUT);
+        }
+
+        long minuteDifference = java.time.temporal.ChronoUnit.MINUTES.between(originalTime, newTime);
+
+        log.info("시간 차이: {} 분, 원래: {}, 변경: {}", minuteDifference, originalTime, newTime);
+
+        // 5. 변경된 아이템의 시간 업데이트
+        changedItem.updateScheduledTime(newTime);
+
+        // 6. 이후 모든 아이템의 시간 조정
+        for (int i = changedItemIndex + 1; i < dailySchedule.getScheduleItems().size(); i++) {
+            ScheduleItem item = dailySchedule.getScheduleItems().get(i);
+            LocalTime adjustedTime = item.getScheduledTime().plusMinutes(minuteDifference);
+            item.updateScheduledTime(adjustedTime);
+            log.debug("조정된 아이템 {}: {} -> {}", item.getActivityType(), item.getScheduledTime(), adjustedTime);
+        }
+
+        // 7. 가이드라인 조회 (과피로 체크용)
+        int ageInMonths = baby.calculateAgeInMonths();
+        AgeBasedSleepGuideline guideline = guidelineRepository.findClosestGuidelineByAge(ageInMonths)
+                .orElse(null);
+
+        // 8. 과피로 방지 경고 (선택사항 - 현재는 로그만 기록)
+        if (guideline != null && changedItem.getDurationMinutes() != null) {
+            int totalWakeTime = calculateTotalWakeTime(dailySchedule, guideline);
+            if (totalWakeTime > guideline.getWakeWindowMaxMinutes() * 16) {
+                log.warn("경고: 아기의 깨시가 권장치를 초과했습니다. 총 깨시: {} 분", totalWakeTime);
+            }
+        }
+
+        // 9. 저장
+        dailySchedule = dailyScheduleRepository.save(dailySchedule);
+
+        log.info("스케줄 동적 조정 완료 - 변경된 아이템 수: {}", changedItemIndex + 1);
+
+        // 10. Response 생성
+        return buildAutoScheduleResponse(dailySchedule, guideline);
+    }
+
+    /**
+     * 총 깨시 계산
+     */
+    private int calculateTotalWakeTime(DailySchedule dailySchedule, AgeBasedSleepGuideline guideline) {
+        int totalWakeTime = 0;
+        for (ScheduleItem item : dailySchedule.getScheduleItems()) {
+            if (item.getDurationMinutes() != null && !item.getActivityType().equals(ActivityType.BEDTIME)) {
+                totalWakeTime += item.getDurationMinutes();
+            }
+        }
+        return totalWakeTime;
     }
 }
