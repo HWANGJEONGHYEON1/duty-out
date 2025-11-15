@@ -67,14 +67,19 @@ public class SecurityConfig {
                 // URL 패턴별 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         // 인증 불필요 (Public)
-                        .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/api/v1/auth/**", "/auth/**").permitAll()
                         .requestMatchers("/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll() // H2 콘솔 (개발용)
                         .requestMatchers("/actuator/**").permitAll() // Actuator (모니터링)
 
                         // 커뮤니티 게시글 조회는 인증 불필요 (읽기 전용)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community/posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/community/posts/*").permitAll()
                         .requestMatchers(HttpMethod.GET, "/community/posts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/community/posts/*").permitAll()
+
+                        // 아기 프로필 조회/생성은 인증 필요
+                        .requestMatchers("/api/v1/babies/**").authenticated()
 
                         // 그 외 모든 요청은 인증 필요
                         .anyRequest().authenticated()
