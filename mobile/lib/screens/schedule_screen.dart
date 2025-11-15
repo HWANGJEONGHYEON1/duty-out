@@ -96,20 +96,23 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                '기상 시간',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF333333),
-                ),
-              ),
-            ],
+          const Text(
+            '기상 시간 입력',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
           ),
           const SizedBox(height: 15),
+          const Text(
+            '아기의 기상 시간을 입력하면 하루 일과가 자동으로 생성됩니다',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 20),
           GestureDetector(
             onTap: baby == null || _isLoadingSchedule
                 ? null
@@ -131,47 +134,60 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     }
                   },
             child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: _isLoadingSchedule ? Colors.grey[300] : const Color(0xFFF5F5F5),
-                borderRadius: BorderRadius.circular(12),
+                color: _isLoadingSchedule ? Colors.grey[300] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(15),
                 border: Border.all(
                   color: const Color(0xFF667EEA),
                   width: 2,
                 ),
               ),
-              child: _isLoadingSchedule
-                  ? const SizedBox(
-                      height: 50,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-                          strokeWidth: 3,
-                        ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.access_time,
+                    size: 32,
+                    color: Color(0xFF667EEA),
+                  ),
+                  const SizedBox(height: 12),
+                  if (_isLoadingSchedule)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                        strokeWidth: 2,
                       ),
                     )
-                  : Text(
-                      '${scheduleProvider.wakeTime.hour.toString().padLeft(2, '0')}:${scheduleProvider.wakeTime.minute.toString().padLeft(2, '0')}',
-                      style: const TextStyle(
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF667EEA),
-                      ),
-                      textAlign: TextAlign.center,
+                  else
+                    Column(
+                      children: [
+                        Text(
+                          '${scheduleProvider.wakeTime.hour.toString().padLeft(2, '0')}:${scheduleProvider.wakeTime.minute.toString().padLeft(2, '0')}',
+                          style: const TextStyle(
+                            fontSize: 48,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF667EEA),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '탭하여 시간 변경',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            '기상 시간을 입력하면 하루 일과가 자동으로 생성됩니다',
-            style: TextStyle(
-              fontSize: 12,
-              color: Color(0xFF999999),
+                ],
+              ),
             ),
           ),
           if (_error != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
