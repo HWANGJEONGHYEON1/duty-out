@@ -29,7 +29,7 @@ class ScheduleProvider with ChangeNotifier {
   /// [wakeUpTime] 기상 시간
   /// [isBreastfeeding] 모유 수유 여부
   Future<void> generateAutoSchedule({
-    required int babyId,
+    required dynamic babyId,
     required DateTime wakeUpTime,
     bool isBreastfeeding = true,
   }) async {
@@ -49,7 +49,9 @@ class ScheduleProvider with ChangeNotifier {
       );
 
       // 응답 파싱
-      _currentBabyId = response['babyId'];
+      _currentBabyId = (response['babyId'] is int)
+          ? response['babyId']
+          : int.tryParse(response['babyId'].toString()) ?? 0;
       _wakeTime = wakeUpTime;
       _scheduleItems = _parseScheduleItems(response['items']);
 
@@ -117,16 +119,18 @@ class ScheduleProvider with ChangeNotifier {
   ///
   /// [babyId] 아기 ID (선택 - 없으면 현재 아기 ID 사용)
   /// [time] 새로운 기상 시간
-  Future<void> updateWakeTime(DateTime time, {int? babyId}) async {
+  Future<void> updateWakeTime(DateTime time, {dynamic babyId}) async {
     _wakeTime = time;
 
     // 아기 ID 설정
     if (babyId != null) {
-      _currentBabyId = babyId;
+      _currentBabyId = (babyId is int)
+          ? babyId
+          : int.tryParse(babyId.toString()) ?? 0;
     }
 
     // 현재 아기 ID가 있으면 스케줄 재생성
-    if (_currentBabyId != null) {
+    if (_currentBabyId != null && _currentBabyId != 0) {
       await generateAutoSchedule(
         babyId: _currentBabyId!,
         wakeUpTime: time,
