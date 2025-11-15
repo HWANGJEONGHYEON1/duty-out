@@ -63,6 +63,18 @@ public class BabyController {
         return ResponseEntity.ok(ApiResponse.success(responses));
     }
 
+    @PutMapping("/{babyId}")
+    @Operation(summary = "아기 프로필 수정", description = "아기 이름이나 프로필 이미지를 수정합니다.")
+    public ResponseEntity<ApiResponse<BabyResponse>> updateBaby(
+            @PathVariable Long babyId,
+            @Valid @RequestBody CreateBabyRequest request) {
+
+        Baby baby = babyService.updateBaby(babyId, request.getName(), request.getProfileImage());
+        BabyResponse response = BabyResponse.from(baby);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     @DeleteMapping("/{babyId}")
     @Operation(summary = "아기 프로필 삭제")
     public ResponseEntity<ApiResponse<Void>> deleteBaby(@PathVariable Long babyId) {
