@@ -128,32 +128,34 @@ class _MainScreenState extends State<MainScreen> {
               });
             }
           : null,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Opacity(
         opacity: enabled ? 1.0 : 0.5,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              icon,
-              style: TextStyle(
-                fontSize: 24,
-                color: enabled
-                    ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
-                    : Colors.grey[400],
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                icon,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: enabled
+                      ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
+                      : Colors.grey[400],
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: enabled
-                    ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
-                    : Colors.grey[400],
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: enabled
+                      ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
+                      : Colors.grey[400],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
