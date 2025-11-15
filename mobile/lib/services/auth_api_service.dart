@@ -24,7 +24,7 @@ class AuthApiService {
     String? profileImage,
   }) async {
     final response = await _apiClient.post(
-      '/auth/register',
+      '/api/v1/auth/register',
       data: {
         'email': email,
         'name': name,
@@ -65,7 +65,7 @@ class AuthApiService {
     required String providerId,
   }) async {
     final response = await _apiClient.post(
-      '/auth/login',
+      '/api/v1/auth/login',
       data: {
         'provider': provider,
         'providerId': providerId,

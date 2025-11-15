@@ -37,7 +37,9 @@ class ApiClient {
   ) async {
     // 인증이 필요한 요청에 Access Token 추가
     if (!options.path.contains('/auth/login') &&
-        !options.path.contains('/auth/register')) {
+        !options.path.contains('/auth/register') &&
+        !options.path.contains('/api/v1/auth/login') &&
+        !options.path.contains('/api/v1/auth/register')) {
       final token = await _storageService.getAccessToken();
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -60,7 +62,7 @@ class ApiClient {
         try {
           // 토큰 갱신 요청
           final response = await _dio.post(
-            '/auth/refresh',
+            '/api/v1/auth/refresh',
             options: Options(
               headers: {'Authorization': 'Bearer $refreshToken'},
             ),
