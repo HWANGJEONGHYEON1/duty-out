@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io' show Platform;
+import 'main_screen.dart';
 
 /// 로그인 화면
 ///
@@ -207,14 +208,12 @@ class LoginScreen extends StatelessWidget {
     // TODO: 카카오 로그인 API 연동
     debugPrint('카카오 로그인 시도');
 
-    // 임시: 로딩 표시
-    _showLoadingDialog(context, '카카오톡 로그인 중...');
-
-    await Future.delayed(const Duration(seconds: 1));
-
+    // 임시: 메인 화면으로 이동
     if (context.mounted) {
-      Navigator.pop(context); // 로딩 닫기
-      _showErrorDialog(context, '카카오 로그인 준비 중입니다.');
+      Navigator.of(context).pushReplacementNamed(
+        '/main',
+        arguments: const MainScreen(),
+      );
     }
   }
 
@@ -223,13 +222,12 @@ class LoginScreen extends StatelessWidget {
     // TODO: 애플 로그인 API 연동
     debugPrint('애플 로그인 시도');
 
-    _showLoadingDialog(context, 'Apple 로그인 중...');
-
-    await Future.delayed(const Duration(seconds: 1));
-
+    // 임시: 메인 화면으로 이동
     if (context.mounted) {
-      Navigator.pop(context);
-      _showErrorDialog(context, 'Apple 로그인 준비 중입니다.');
+      Navigator.of(context).pushReplacementNamed(
+        '/main',
+        arguments: const MainScreen(),
+      );
     }
   }
 
@@ -238,13 +236,12 @@ class LoginScreen extends StatelessWidget {
     // TODO: 구글 로그인 API 연동
     debugPrint('구글 로그인 시도');
 
-    _showLoadingDialog(context, 'Google 로그인 중...');
-
-    await Future.delayed(const Duration(seconds: 1));
-
+    // 임시: 메인 화면으로 이동
     if (context.mounted) {
-      Navigator.pop(context);
-      _showErrorDialog(context, 'Google 로그인 준비 중입니다.');
+      Navigator.of(context).pushReplacementNamed(
+        '/main',
+        arguments: const MainScreen(),
+      );
     }
   }
 

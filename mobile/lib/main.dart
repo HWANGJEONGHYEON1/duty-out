@@ -7,6 +7,7 @@ import 'providers/statistics_provider.dart';
 import 'providers/sleep_tracking_provider.dart';
 import 'providers/community_provider.dart';
 import 'screens/login_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,6 +37,9 @@ class BabySleepApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const LoginScreen(),
+        routes: {
+          '/main': (context) => const MainScreen(),
+        },
         debugShowCheckedModeBanner: false,
       ),
     );
