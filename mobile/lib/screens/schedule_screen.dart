@@ -96,69 +96,98 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                '기상 시간',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          const Text(
+            '기상 시간 입력',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 15),
+          const Text(
+            '아기의 기상 시간을 입력하면 하루 일과가 자동으로 생성됩니다',
+            style: TextStyle(
+              fontSize: 13,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: baby == null || _isLoadingSchedule
+                ? null
+                : () async {
+                    final time = await showTimePicker(
+                      context: context,
+                      initialTime: TimeOfDay.fromDateTime(scheduleProvider.wakeTime),
+                    );
+                    if (time != null && mounted) {
+                      final now = DateTime.now();
+                      final newWakeTime = DateTime(
+                        now.year,
+                        now.month,
+                        now.day,
+                        time.hour,
+                        time.minute,
+                      );
+                      await _updateWakeTime(scheduleProvider, newWakeTime, baby.id);
+                    }
+                  },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: _isLoadingSchedule ? Colors.grey[300] : Colors.grey[100],
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: const Color(0xFF667EEA),
+                  width: 2,
+                ),
               ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: baby == null || _isLoadingSchedule
-                    ? null
-                    : () async {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.fromDateTime(scheduleProvider.wakeTime),
-                        );
-                        if (time != null && mounted) {
-                          final now = DateTime.now();
-                          final newWakeTime = DateTime(
-                            now.year,
-                            now.month,
-                            now.day,
-                            time.hour,
-                            time.minute,
-                          );
-                          await _updateWakeTime(scheduleProvider, newWakeTime, baby.id);
-                        }
-                      },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: _isLoadingSchedule ? Colors.grey[300] : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.access_time,
+                    size: 32,
+                    color: Color(0xFF667EEA),
                   ),
-                  child: _isLoadingSchedule
-                      ? const SizedBox(
-                          width: 80,
-                          child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text(
+                  const SizedBox(height: 12),
+                  if (_isLoadingSchedule)
+                    const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  else
+                    Column(
+                      children: [
+                        Text(
                           '${scheduleProvider.wakeTime.hour.toString().padLeft(2, '0')}:${scheduleProvider.wakeTime.minute.toString().padLeft(2, '0')}',
                           style: const TextStyle(
-                            fontSize: 36,
+                            fontSize: 48,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF667EEA),
                           ),
                         ),
-                ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '탭하여 시간 변경',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
               ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '기상 시간을 입력하면 하루 일과가 자동으로 생성됩니다',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
             ),
           ),
           if (_error != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 15),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

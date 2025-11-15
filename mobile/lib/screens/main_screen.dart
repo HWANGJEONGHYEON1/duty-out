@@ -5,7 +5,6 @@ import 'new_home_screen.dart';
 import 'new_statistics_screen.dart';
 import 'community_screen.dart';
 import 'profile_screen.dart';
-import 'baby_registration_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -54,9 +53,37 @@ class _MainScreenState extends State<MainScreen> {
     final babyProvider = context.watch<BabyProvider>();
     final baby = babyProvider.baby;
 
-    // 아기 정보가 로드되고 없으면 등록 화면으로 이동
-    if (_babyLoaded && baby == null) {
-      return const BabyRegistrationScreen();
+    // 아기 정보가 없으면 설정 탭만 표시
+    if (baby == null) {
+      return Scaffold(
+        body: const ProfileScreen(),
+        bottomNavigationBar: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildNavItem(0, '📅', '스케줄', enabled: false),
+                  _buildNavItem(1, '📊', '통계', enabled: false),
+                  _buildNavItem(2, '💬', '커뮤니티', enabled: false),
+                  _buildNavItem(3, '👤', '설정', enabled: true),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return Scaffold(
@@ -90,17 +117,20 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, String icon, String label) {
+  Widget _buildNavItem(int index, String icon, String label, {bool enabled = true}) {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
+      onTap: enabled
+          ? () {
+              setState(() {
+                _currentIndex = index;
+              });
+            }
+          : null,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 8),
+        opacity: enabled ? 1.0 : 0.5,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -108,7 +138,9 @@ class _MainScreenState extends State<MainScreen> {
               icon,
               style: TextStyle(
                 fontSize: 24,
-                color: isActive ? const Color(0xFF667EEA) : Colors.grey,
+                color: enabled
+                    ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
+                    : Colors.grey[400],
               ),
             ),
             const SizedBox(height: 4),
@@ -116,7 +148,9 @@ class _MainScreenState extends State<MainScreen> {
               label,
               style: TextStyle(
                 fontSize: 11,
-                color: isActive ? const Color(0xFF667EEA) : Colors.grey,
+                color: enabled
+                    ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
+                    : Colors.grey[400],
               ),
             ),
           ],

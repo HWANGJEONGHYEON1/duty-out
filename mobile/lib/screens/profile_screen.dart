@@ -108,131 +108,164 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             _buildAvatar(),
-            const SizedBox(height: 20),
-            if (baby != null) ...[
-              _buildEditableNameField(baby),
-              const SizedBox(height: 15),
-              if (_editError != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.red[50],
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.red[200]!),
-                  ),
-                  child: Text(
-                    _editError!,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.red[700],
-                    ),
-                  ),
-                ),
-              if (_editError != null) const SizedBox(height: 15),
-              if (_isEditingName)
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : () => _saveBabyName(babyProvider, baby.id),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF667EEA),
-                      disabledBackgroundColor: Colors.grey[400],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            '저장',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
-                ),
-              if (_isEditingName) const SizedBox(height: 15),
-              _buildProfileField(
-                '생년월일',
-                DateFormat('yyyy년 M월 d일').format(baby.birthDate),
-              ),
-              const SizedBox(height: 15),
-              _buildProfileField(
-                '출생 주수',
-                '${baby.birthWeeks}주 (정상 출산)',
-              ),
-              const SizedBox(height: 15),
-              _buildProfileField(
-                '현재 월령',
-                '${baby.ageText} (생후 ${baby.ageInDays}일)',
-              ),
-              const SizedBox(height: 30),
+            const SizedBox(height: 30),
+            // 아기 정보 영역
+            if (baby == null) ...[
+              // 아기 정보 입력 폼
+              _buildBabyInfoInputSection(babyProvider),
             ] else ...[
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: const Text(
-                  '아기 정보를 등록해주세요',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 30),
-              _buildBabyRegistrationForm(babyProvider),
+              // 아기 정보 표시 및 편집
+              _buildBabyInfoSection(baby, babyProvider),
             ],
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '알림 설정',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-            const SizedBox(height: 15),
-            _buildNotificationSetting(
-              '다음 일정 알림',
-              '10분 전 알림',
-              _nextScheduleNotification,
-              (value) {
-                setState(() {
-                  _nextScheduleNotification = value;
-                });
-              },
-            ),
-            const SizedBox(height: 15),
-            _buildNotificationSetting(
-              '수면 기록 리마인더',
-              '기록 누락 시 알림',
-              _sleepRecordReminder,
-              (value) {
-                setState(() {
-                  _sleepRecordReminder = value;
-                });
-              },
-            ),
+            const SizedBox(height: 40),
+            // 알림 설정
+            _buildNotificationSettingsSection(),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBabyInfoInputSection(BabyProvider babyProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '아기 정보 입력',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 20),
+        _buildBabyRegistrationForm(babyProvider),
+      ],
+    );
+  }
+
+  Widget _buildBabyInfoSection(Baby baby, BabyProvider babyProvider) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '아기 정보',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 20),
+        // 아기 이름 (편집 가능)
+        _buildEditableNameField(baby),
+        const SizedBox(height: 15),
+        if (_editError != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.red[50],
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.red[200]!),
+            ),
+            child: Text(
+              _editError!,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.red[700],
+              ),
+            ),
+          ),
+        if (_editError != null) const SizedBox(height: 15),
+        if (_isEditingName)
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _isSaving ? null : () => _saveBabyName(babyProvider, baby.id),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667EEA),
+                disabledBackgroundColor: Colors.grey[400],
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Text(
+                      '저장',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+          ),
+        if (_isEditingName) const SizedBox(height: 15),
+        // 생년월일
+        _buildProfileField(
+          '생년월일',
+          DateFormat('yyyy년 M월 d일').format(baby.birthDate),
+        ),
+        const SizedBox(height: 15),
+        // 출생 주수
+        _buildProfileField(
+          '출생 주수',
+          '${baby.birthWeeks}주',
+        ),
+        const SizedBox(height: 15),
+        // 현재 월령
+        _buildProfileField(
+          '현재 월령',
+          '${baby.ageText} (생후 ${baby.ageInDays}일)',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNotificationSettingsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '알림 설정',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black,
+          ),
+        ),
+        const SizedBox(height: 20),
+        _buildNotificationSetting(
+          '다음 일정 알림',
+          '10분 전 알림',
+          _nextScheduleNotification,
+          (value) {
+            setState(() {
+              _nextScheduleNotification = value;
+            });
+          },
+        ),
+        const SizedBox(height: 15),
+        _buildNotificationSetting(
+          '수면 기록 리마인더',
+          '기록 누락 시 알림',
+          _sleepRecordReminder,
+          (value) {
+            setState(() {
+              _sleepRecordReminder = value;
+            });
+          },
+        ),
+      ],
     );
   }
 
