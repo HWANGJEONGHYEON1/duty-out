@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import '../models/baby.dart';
 import '../providers/baby_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
