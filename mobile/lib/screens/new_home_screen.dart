@@ -397,18 +397,28 @@ class NewHomeScreen extends StatelessWidget {
         padding: const EdgeInsets.all(40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Icon(
+          children: [
+            const Icon(
               Icons.schedule,
               size: 80,
               color: Colors.grey,
             ),
-            SizedBox(height: 20),
-            Text(
-              '스케줄을 생성해주세요',
+            const SizedBox(height: 20),
+            const Text(
+              '기상시간 입력하세요',
               style: TextStyle(
                 fontSize: 16,
-                color: Colors.grey,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF667EEA),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '설정 탭에서 기상 시간을 입력하면\n하루 일과가 자동으로 생성됩니다',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
               ),
             ),
           ],

@@ -270,10 +270,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.schedule, size: 48, color: Colors.grey[400]),
-              const SizedBox(height: 16),
+              Icon(Icons.schedule, size: 60, color: Colors.grey[400]),
+              const SizedBox(height: 20),
+              const Text(
+                '기상 시간을 입력하세요',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF667EEA),
+                ),
+              ),
+              const SizedBox(height: 8),
               Text(
-                '기상 시간을 입력하면 스케줄이 생성됩니다',
+                '상단의 기상 시간을 입력하면\n하루 일과가 자동으로 생성됩니다',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
@@ -300,57 +310,97 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Widget _buildScheduleItem(dynamic item) {
     Color backgroundColor = Colors.white;
+
+    // 타입별 배경색 설정 (프로토타입 참고)
     if (item.type == 'sleep') {
-      backgroundColor = const Color(0xFFF3E5F5);
+      backgroundColor = const Color(0xFFF3E5F5); // 낮잠: 보라색
+    } else if (item.activity?.contains('취침') == true ||
+               item.activity?.contains('BEDTIME') == true) {
+      backgroundColor = const Color(0xFFE3F2FD); // 취침: 파란색
     }
 
     return GestureDetector(
       onTap: () => _showScheduleEditDialog(item),
       child: Container(
         margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
               offset: const Offset(0, 2),
             ),
           ],
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-          title: Text(
-            item.durationMinutes != null
-                ? '${item.timeString} - ${_getEndTime(item)}'
-                : item.timeString,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.activity,
-                style: const TextStyle(fontSize: 14),
+        child: Row(
+          children: [
+            // 시간과 활동 정보
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 시간
+                  Text(
+                    item.durationMinutes != null
+                        ? '${item.timeString} - ${_getEndTime(item)}'
+                        : item.timeString,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF333333),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  // 활동명
+                  Text(
+                    item.activity,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Color(0xFF666666),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  // 소요 시간
+                  if (item.durationMinutes != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      item.durationString,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF999999),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-              if (item.durationMinutes != null)
-                Text(
-                  item.durationString,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
+            ),
+            const SizedBox(width: 15),
+            // 드래그 핸들 + 편집 아이콘
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // 드래그 핸들
+                const Text(
+                  '≡',
+                  style: TextStyle(
+                    fontSize: 20,
+                    color: Color(0xFFCCCCCC),
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-            ],
-          ),
-          trailing: const Icon(
-            Icons.edit,
-            color: Colors.grey,
-          ),
+                const SizedBox(height: 8),
+                // 편집 아이콘
+                Icon(
+                  Icons.edit,
+                  size: 20,
+                  color: Colors.grey[400],
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
