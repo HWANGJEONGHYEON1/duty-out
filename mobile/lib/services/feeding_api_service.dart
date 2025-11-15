@@ -21,7 +21,7 @@ class FeedingApiService {
     String? note,
   }) async {
     final response = await _apiClient.post(
-      '/babies/$babyId/feeding-records',
+      '/api/v1/babies/$babyId/feeding-records',
       data: {
         'feedingTime': feedingTime,
         'type': type,
@@ -52,7 +52,7 @@ class FeedingApiService {
     if (endDate != null) queryParams['endDate'] = endDate;
 
     final response = await _apiClient.get(
-      '/babies/$babyId/feeding-records',
+      '/api/v1/babies/$babyId/feeding-records',
       queryParameters: queryParams,
     );
 
@@ -69,7 +69,7 @@ class FeedingApiService {
   /// [babyId] 아기 ID
   Future<int> getTodayTotalAmount({required int babyId}) async {
     final response = await _apiClient.get(
-      '/babies/$babyId/feeding-records/today-stats',
+      '/api/v1/babies/$babyId/feeding-records/today-stats',
     );
 
     if (response.statusCode == 200) {
@@ -92,7 +92,7 @@ class FeedingApiService {
     String? note,
   }) async {
     final response = await _apiClient.put(
-      '/babies/$babyId/feeding-records/$recordId',
+      '/api/v1/babies/$babyId/feeding-records/$recordId',
       data: {
         if (feedingTime != null) 'feedingTime': feedingTime,
         if (type != null) 'type': type,
@@ -117,7 +117,7 @@ class FeedingApiService {
     required int recordId,
   }) async {
     final response = await _apiClient.delete(
-      '/babies/$babyId/feeding-records/$recordId',
+      '/api/v1/babies/$babyId/feeding-records/$recordId',
     );
 
     if (response.statusCode != 200) {

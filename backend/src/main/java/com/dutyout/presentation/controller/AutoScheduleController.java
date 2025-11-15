@@ -22,13 +22,13 @@ import org.springframework.web.bind.annotation.*;
  * 개월수 기반 자동 스케줄 생성 및 동적 조정 API를 제공합니다.
  *
  * 엔드포인트:
- * - POST /babies/{babyId}/auto-schedule : 자동 스케줄 생성
- * - PUT /babies/{babyId}/auto-schedule/adjust : 스케줄 동적 조정
+ * - POST /api/v1/babies/{babyId}/auto-schedule : 자동 스케줄 생성
+ * - PUT /api/v1/babies/{babyId}/auto-schedule/adjust : 스케줄 동적 조정
  */
 @Tag(name = "Auto Schedule", description = "자동 스케줄 생성 API")
 @Slf4j
 @RestController
-@RequestMapping("/babies/{babyId}/auto-schedule")
+@RequestMapping("/api/v1/babies/{babyId}/auto-schedule")
 @RequiredArgsConstructor
 public class AutoScheduleController {
 

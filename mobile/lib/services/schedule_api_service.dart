@@ -19,7 +19,7 @@ class ScheduleApiService {
     bool? isBreastfeeding,
   }) async {
     final response = await _apiClient.post(
-      '/babies/$babyId/auto-schedule',
+      '/api/v1/babies/$babyId/auto-schedule',
       data: {
         'wakeUpTime': wakeUpTime,
         if (isBreastfeeding != null) 'isBreastfeeding': isBreastfeeding,
@@ -50,7 +50,7 @@ class ScheduleApiService {
     int? actualDurationMinutes,
   }) async {
     final response = await _apiClient.put(
-      '/babies/$babyId/auto-schedule/adjust',
+      '/api/v1/babies/$babyId/auto-schedule/adjust',
       data: {
         'scheduleItemId': scheduleItemId,
         if (actualStartTime != null) 'actualStartTime': actualStartTime,

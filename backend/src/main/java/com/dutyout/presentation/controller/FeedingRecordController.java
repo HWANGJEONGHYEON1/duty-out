@@ -28,7 +28,7 @@ import java.util.Map;
 @Tag(name = "Feeding Records", description = "수유 기록 API")
 @Slf4j
 @RestController
-@RequestMapping("/babies/{babyId}/feeding-records")
+@RequestMapping("/api/v1/babies/{babyId}/feeding-records")
 @RequiredArgsConstructor
 public class FeedingRecordController {
 

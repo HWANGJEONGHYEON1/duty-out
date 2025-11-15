@@ -1,18 +1,73 @@
 import 'package:flutter/foundation.dart';
 import '../models/baby.dart';
+import '../services/baby_api_service.dart';
 
 class BabyProvider with ChangeNotifier {
+  final BabyApiService _babyApiService = BabyApiService();
+
   Baby? _baby;
+  List<Baby> _babies = [];
+  bool _isLoading = false;
+  String? _error;
 
   Baby? get baby => _baby;
+  List<Baby> get babies => _babies;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
   void updateBaby(Baby baby) {
     _baby = baby;
     notifyListeners();
   }
 
-  // TODO: API 연결 필요
-  // Future<void> loadBaby() async {
-  //   // API 호출로 아기 정보 불러오기
-  // }
+  /// 내 아기 목록 조회
+  Future<void> loadMyBabies() async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _babyApiService.getMyBabies();
+      _babies = response.map((baby) => Baby.fromJson(baby)).toList();
+
+      // 첫 번째 아기를 기본값으로 설정
+      if (_babies.isNotEmpty) {
+        _baby = _babies[0];
+      }
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '아기 목록 조회 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 특정 아기 정보 조회
+  Future<void> loadBaby(int babyId) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _babyApiService.getBaby(babyId: babyId);
+      _baby = Baby.fromJson(response);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '아기 정보 조회 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 에러 초기화
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
 }

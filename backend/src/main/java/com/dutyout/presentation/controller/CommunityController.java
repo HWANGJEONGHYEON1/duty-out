@@ -32,7 +32,7 @@ import java.util.List;
 @Tag(name = "Community", description = "커뮤니티 API")
 @Slf4j
 @RestController
-@RequestMapping("/community")
+@RequestMapping("/api/v1/community")
 @RequiredArgsConstructor
 public class CommunityController {
 

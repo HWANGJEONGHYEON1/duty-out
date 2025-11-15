@@ -115,9 +115,15 @@ class ScheduleProvider with ChangeNotifier {
 
   /// 기상 시간 변경 및 스케줄 재생성
   ///
+  /// [babyId] 아기 ID (선택 - 없으면 현재 아기 ID 사용)
   /// [time] 새로운 기상 시간
-  Future<void> updateWakeTime(DateTime time) async {
+  Future<void> updateWakeTime(DateTime time, {int? babyId}) async {
     _wakeTime = time;
+
+    // 아기 ID 설정
+    if (babyId != null) {
+      _currentBabyId = babyId;
+    }
 
     // 현재 아기 ID가 있으면 스케줄 재생성
     if (_currentBabyId != null) {
@@ -125,9 +131,14 @@ class ScheduleProvider with ChangeNotifier {
         babyId: _currentBabyId!,
         wakeUpTime: time,
       );
+    } else {
+      notifyListeners();
     }
+  }
 
-    notifyListeners();
+  /// 현재 아기 ID 설정
+  void setCurrentBabyId(int babyId) {
+    _currentBabyId = babyId;
   }
 
   /// 다음 스케줄 아이템 조회

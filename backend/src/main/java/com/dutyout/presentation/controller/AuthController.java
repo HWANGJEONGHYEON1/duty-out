@@ -22,14 +22,14 @@ import org.springframework.web.bind.annotation.*;
  * 사용자 인증 관련 HTTP 엔드포인트를 제공합니다.
  *
  * 엔드포인트:
- * - POST /auth/register : 회원가입
- * - POST /auth/login : 로그인
- * - POST /auth/refresh : Access Token 갱신
+ * - POST /api/v1/auth/register : 회원가입
+ * - POST /api/v1/auth/login : 로그인
+ * - POST /api/v1/auth/refresh : Access Token 갱신
  */
 @Tag(name = "Authentication", description = "인증 API")
 @Slf4j
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

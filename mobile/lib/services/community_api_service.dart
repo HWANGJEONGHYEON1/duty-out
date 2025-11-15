@@ -17,7 +17,7 @@ class CommunityApiService {
     required String content,
   }) async {
     final response = await _apiClient.post(
-      '/community/posts',
+      '/api/v1/community/posts',
       data: {
         'title': title,
         'content': content,
@@ -48,7 +48,7 @@ class CommunityApiService {
     };
 
     final response = await _apiClient.get(
-      '/community/posts',
+      '/api/v1/community/posts',
       queryParameters: queryParams,
     );
 
@@ -63,7 +63,7 @@ class CommunityApiService {
   ///
   /// [postId] 게시글 ID
   Future<Map<String, dynamic>> getPost({required int postId}) async {
-    final response = await _apiClient.get('/community/posts/$postId');
+    final response = await _apiClient.get('/api/v1/community/posts/$postId');
 
     if (response.statusCode == 200) {
       return response.data['data'];
@@ -83,7 +83,7 @@ class CommunityApiService {
     required String content,
   }) async {
     final response = await _apiClient.put(
-      '/community/posts/$postId',
+      '/api/v1/community/posts/$postId',
       data: {
         'title': title,
         'content': content,
@@ -101,7 +101,7 @@ class CommunityApiService {
   ///
   /// [postId] 게시글 ID
   Future<void> deletePost({required int postId}) async {
-    final response = await _apiClient.delete('/community/posts/$postId');
+    final response = await _apiClient.delete('/api/v1/community/posts/$postId');
 
     if (response.statusCode != 200) {
       throw Exception('게시글 삭제 실패: ${response.statusCode}');
@@ -112,7 +112,7 @@ class CommunityApiService {
   ///
   /// [postId] 게시글 ID
   Future<Map<String, dynamic>> likePost({required int postId}) async {
-    final response = await _apiClient.post('/community/posts/$postId/like');
+    final response = await _apiClient.post('/api/v1/community/posts/$postId/like');
 
     if (response.statusCode == 200) {
       return response.data['data'];
@@ -132,7 +132,7 @@ class CommunityApiService {
     required String content,
   }) async {
     final response = await _apiClient.post(
-      '/community/posts/$postId/comments',
+      '/api/v1/community/posts/$postId/comments',
       data: {
         'content': content,
       },
@@ -150,7 +150,7 @@ class CommunityApiService {
   /// [postId] 게시글 ID
   Future<List<Map<String, dynamic>>> getComments({required int postId}) async {
     final response =
-        await _apiClient.get('/community/posts/$postId/comments');
+        await _apiClient.get('/api/v1/community/posts/$postId/comments');
 
     if (response.statusCode == 200) {
       final List data = response.data['data'];
@@ -169,7 +169,7 @@ class CommunityApiService {
     required String content,
   }) async {
     final response = await _apiClient.put(
-      '/community/comments/$commentId',
+      '/api/v1/community/comments/$commentId',
       data: {
         'content': content,
       },
@@ -186,7 +186,7 @@ class CommunityApiService {
   ///
   /// [commentId] 댓글 ID
   Future<void> deleteComment({required int commentId}) async {
-    final response = await _apiClient.delete('/community/comments/$commentId');
+    final response = await _apiClient.delete('/api/v1/community/comments/$commentId');
 
     if (response.statusCode != 200) {
       throw Exception('댓글 삭제 실패: ${response.statusCode}');

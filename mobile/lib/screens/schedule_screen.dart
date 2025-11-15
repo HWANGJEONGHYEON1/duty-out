@@ -59,6 +59,8 @@ class ScheduleScreen extends StatelessWidget {
 
   Widget _buildWakeTimeInput(BuildContext context) {
     final scheduleProvider = context.watch<ScheduleProvider>();
+    final babyProvider = context.watch<BabyProvider>();
+    final baby = babyProvider.baby;
 
     return Container(
       width: double.infinity,
@@ -75,23 +77,25 @@ class ScheduleScreen extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               GestureDetector(
-                onTap: () async {
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.fromDateTime(scheduleProvider.wakeTime),
-                  );
-                  if (time != null) {
-                    final now = DateTime.now();
-                    final newWakeTime = DateTime(
-                      now.year,
-                      now.month,
-                      now.day,
-                      time.hour,
-                      time.minute,
-                    );
-                    scheduleProvider.updateWakeTime(newWakeTime);
-                  }
-                },
+                onTap: baby == null
+                    ? null
+                    : () async {
+                        final time = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay.fromDateTime(scheduleProvider.wakeTime),
+                        );
+                        if (time != null) {
+                          final now = DateTime.now();
+                          final newWakeTime = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                            time.hour,
+                            time.minute,
+                          );
+                          await scheduleProvider.updateWakeTime(newWakeTime, babyId: baby.id);
+                        }
+                      },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
