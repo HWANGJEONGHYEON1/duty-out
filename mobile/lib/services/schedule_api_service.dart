@@ -14,7 +14,7 @@ class ScheduleApiService {
   /// [wakeUpTime] 기상 시간 (HH:mm 형식)
   /// [isBreastfeeding] 모유 수유 여부
   Future<Map<String, dynamic>> generateAutoSchedule({
-    required int babyId,
+    required dynamic babyId,
     required String wakeUpTime,
     bool? isBreastfeeding,
   }) async {

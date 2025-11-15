@@ -14,7 +14,7 @@ class FeedingApiService {
   /// [amountMl] 수유량 (ml)
   /// [note] 메모
   Future<Map<String, dynamic>> createFeedingRecord({
-    required int babyId,
+    required dynamic babyId,
     required String feedingTime,
     required String type,
     int? amountMl,
@@ -43,7 +43,7 @@ class FeedingApiService {
   /// [startDate] 시작 날짜 (ISO 8601 형식, 선택)
   /// [endDate] 종료 날짜 (ISO 8601 형식, 선택)
   Future<List<Map<String, dynamic>>> getFeedingRecords({
-    required int babyId,
+    required dynamic babyId,
     String? startDate,
     String? endDate,
   }) async {
@@ -67,7 +67,7 @@ class FeedingApiService {
   /// 오늘 총 수유량 조회
   ///
   /// [babyId] 아기 ID
-  Future<int> getTodayTotalAmount({required int babyId}) async {
+  Future<int> getTodayTotalAmount({required dynamic babyId}) async {
     final response = await _apiClient.get(
       '/api/v1/babies/$babyId/feeding-records/today-stats',
     );
@@ -84,7 +84,7 @@ class FeedingApiService {
   /// [babyId] 아기 ID
   /// [recordId] 수유 기록 ID
   Future<Map<String, dynamic>> updateFeedingRecord({
-    required int babyId,
+    required dynamic babyId,
     required int recordId,
     String? feedingTime,
     String? type,
@@ -113,7 +113,7 @@ class FeedingApiService {
   /// [babyId] 아기 ID
   /// [recordId] 수유 기록 ID
   Future<void> deleteFeedingRecord({
-    required int babyId,
+    required dynamic babyId,
     required int recordId,
   }) async {
     final response = await _apiClient.delete(

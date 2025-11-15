@@ -1,5 +1,5 @@
 class Baby {
-  final String id;
+  final int id;
   final String name;
   final DateTime birthDate;
   final int birthWeeks;
@@ -10,6 +10,28 @@ class Baby {
     required this.birthDate,
     this.birthWeeks = 39,
   });
+
+  /// JSON으로부터 Baby 객체 생성
+  factory Baby.fromJson(Map<String, dynamic> json) {
+    return Baby(
+      id: json['id'] is int ? json['id'] : int.parse(json['id'].toString()),
+      name: json['name'] ?? '',
+      birthDate: json['birthDate'] is String
+          ? DateTime.parse(json['birthDate'])
+          : json['birthDate'],
+      birthWeeks: json['birthWeeks'] ?? 39,
+    );
+  }
+
+  /// Baby 객체를 JSON으로 변환
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'birthDate': birthDate.toIso8601String(),
+      'birthWeeks': birthWeeks,
+    };
+  }
 
   int get ageInDays {
     return DateTime.now().difference(birthDate).inDays;
