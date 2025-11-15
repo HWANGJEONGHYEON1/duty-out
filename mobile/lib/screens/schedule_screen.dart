@@ -3,8 +3,16 @@ import 'package:provider/provider.dart';
 import '../providers/baby_provider.dart';
 import '../providers/schedule_provider.dart';
 
-class ScheduleScreen extends StatelessWidget {
+class ScheduleScreen extends StatefulWidget {
   const ScheduleScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ScheduleScreen> createState() => _ScheduleScreenState();
+}
+
+class _ScheduleScreenState extends State<ScheduleScreen> {
+  String? _error;
+  bool _isLoadingSchedule = false;
 
   @override
   Widget build(BuildContext context) {
@@ -73,18 +81,18 @@ class ScheduleScreen extends StatelessWidget {
             children: [
               const Text(
                 '기상 시간',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               const SizedBox(width: 10),
               GestureDetector(
-                onTap: baby == null
+                onTap: baby == null || _isLoadingSchedule
                     ? null
                     : () async {
                         final time = await showTimePicker(
                           context: context,
                           initialTime: TimeOfDay.fromDateTime(scheduleProvider.wakeTime),
                         );
-                        if (time != null) {
+                        if (time != null && mounted) {
                           final now = DateTime.now();
                           final newWakeTime = DateTime(
                             now.year,
@@ -93,23 +101,31 @@ class ScheduleScreen extends StatelessWidget {
                             time.hour,
                             time.minute,
                           );
-                          await scheduleProvider.updateWakeTime(newWakeTime, babyId: baby.id);
+                          await _updateWakeTime(scheduleProvider, newWakeTime, baby.id);
                         }
                       },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: _isLoadingSchedule ? Colors.grey[300] : Colors.grey[200],
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(
-                    '${scheduleProvider.wakeTime.hour.toString().padLeft(2, '0')}:${scheduleProvider.wakeTime.minute.toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF667EEA),
-                    ),
-                  ),
+                  child: _isLoadingSchedule
+                      ? const SizedBox(
+                          width: 80,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667EEA)),
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          '${scheduleProvider.wakeTime.hour.toString().padLeft(2, '0')}:${scheduleProvider.wakeTime.minute.toString().padLeft(2, '0')}',
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF667EEA),
+                          ),
+                        ),
                 ),
               ),
             ],
@@ -122,9 +138,78 @@ class ScheduleScreen extends StatelessWidget {
               color: Colors.grey,
             ),
           ),
+          if (_error != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red[50],
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.red[200]!),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: Colors.red[700], size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _error!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.red[700],
+                      ),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _error = null;
+                      });
+                    },
+                    child: Icon(Icons.close, color: Colors.red[700], size: 18),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
+  }
+
+  Future<void> _updateWakeTime(
+    ScheduleProvider scheduleProvider,
+    DateTime newWakeTime,
+    int babyId,
+  ) async {
+    setState(() {
+      _isLoadingSchedule = true;
+      _error = null;
+    });
+
+    try {
+      await scheduleProvider.updateWakeTime(newWakeTime, babyId: babyId);
+
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedule = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('스케줄이 생성되었습니다!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = '스케줄 생성 실패: $e';
+          _isLoadingSchedule = false;
+        });
+      }
+    }
   }
 
   Widget _buildScheduleList(BuildContext context) {

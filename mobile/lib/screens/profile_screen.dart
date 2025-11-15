@@ -13,6 +13,31 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _nextScheduleNotification = true;
   bool _sleepRecordReminder = true;
+  late TextEditingController _nameController;
+  bool _isEditingName = false;
+  bool _isSaving = false;
+  String? _editError;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final baby = context.watch<BabyProvider>().baby;
+    if (baby != null && _nameController.text.isEmpty) {
+      _nameController.text = baby.name;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +91,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileContent(BuildContext context) {
     final baby = context.watch<BabyProvider>().baby;
+    final babyProvider = context.read<BabyProvider>();
 
     return Container(
       color: Colors.grey[100],
@@ -76,8 +102,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildAvatar(),
             const SizedBox(height: 20),
             if (baby != null) ...[
-              _buildProfileField('이름', baby.name, isEditable: true),
+              _buildEditableNameField(baby),
               const SizedBox(height: 15),
+              if (_editError != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Text(
+                    _editError!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red[700],
+                    ),
+                  ),
+                ),
+              if (_editError != null) const SizedBox(height: 15),
+              if (_isEditingName)
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : () => _saveBabyName(babyProvider, baby.id),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF667EEA),
+                      disabledBackgroundColor: Colors.grey[400],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: _isSaving
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            '저장',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                  ),
+                ),
+              if (_isEditingName) const SizedBox(height: 15),
               _buildProfileField(
                 '생년월일',
                 DateFormat('yyyy년 M월 d일').format(baby.birthDate),
@@ -151,6 +227,127 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildEditableNameField(Baby baby) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(15),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            '이름',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _isEditingName
+                    ? TextField(
+                        controller: _nameController,
+                        decoration: InputDecoration(
+                          hintText: baby.name,
+                          border: const UnderlineInputBorder(),
+                          contentPadding: const EdgeInsets.symmetric(vertical: 5),
+                          hintStyle: TextStyle(color: Colors.grey[400]),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        autofocus: true,
+                      )
+                    : Text(
+                        baby.name,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 10),
+              GestureDetector(
+                onTap: _isSaving
+                    ? null
+                    : () {
+                        setState(() {
+                          if (_isEditingName) {
+                            _isEditingName = false;
+                            _editError = null;
+                          } else {
+                            _isEditingName = true;
+                          }
+                        });
+                      },
+                child: Icon(
+                  _isEditingName ? Icons.close : Icons.edit,
+                  color: Colors.grey[500],
+                  size: 20,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _saveBabyName(BabyProvider babyProvider, int babyId) async {
+    if (_nameController.text.isEmpty) {
+      setState(() {
+        _editError = '아기 이름을 입력해주세요';
+      });
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+      _editError = null;
+    });
+
+    try {
+      await babyProvider.updateBabyInfo(
+        babyId: babyId,
+        name: _nameController.text,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isEditingName = false;
+          _isSaving = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('아기 정보가 저장되었습니다!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _editError = '저장 실패: $e';
+          _isSaving = false;
+        });
+      }
+    }
+  }
+
   Widget _buildAvatar() {
     return Container(
       width: 100,
@@ -172,7 +369,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildProfileField(String label, String value, {bool isEditable = false}) {
+  Widget _buildProfileField(String label, String value) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -198,23 +395,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
           const SizedBox(height: 5),
-          isEditable
-              ? TextField(
-                  decoration: InputDecoration(
-                    hintText: value,
-                    border: const UnderlineInputBorder(),
-                    contentPadding: const EdgeInsets.symmetric(vertical: 5),
-                  ),
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                )
-              : Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+            ),
+          ),
         ],
       ),
     );
