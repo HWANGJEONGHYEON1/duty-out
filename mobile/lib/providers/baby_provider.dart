@@ -65,6 +65,32 @@ class BabyProvider with ChangeNotifier {
     }
   }
 
+  /// 아기 정보 수정
+  Future<void> updateBabyInfo({
+    required int babyId,
+    required String name,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _babyApiService.updateBaby(
+        babyId: babyId,
+        name: name,
+      );
+      _baby = Baby.fromJson(response);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '아기 정보 수정 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   /// 에러 초기화
   void clearError() {
     _error = null;
