@@ -241,10 +241,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.schedule, size: 48, color: Colors.grey[400]),
-              const SizedBox(height: 16),
+              Icon(Icons.schedule, size: 60, color: Colors.grey[400]),
+              const SizedBox(height: 20),
+              const Text(
+                '기상 시간을 입력하세요',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF667EEA),
+                ),
+              ),
+              const SizedBox(height: 8),
               Text(
-                '기상 시간을 입력하면 스케줄이 생성됩니다',
+                '상단의 기상 시간을 입력하면\n하루 일과가 자동으로 생성됩니다',
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
                   color: Colors.grey[600],
