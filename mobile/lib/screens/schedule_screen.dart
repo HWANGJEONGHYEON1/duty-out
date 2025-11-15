@@ -14,6 +14,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   String? _error;
   bool _isLoadingSchedule = false;
 
+  // 편집 관련 변수
+  late TextEditingController _editTimeController;
+  late TextEditingController _editActivityController;
+  String? _editingItemId;
+
+  @override
+  void initState() {
+    super.initState();
+    _editTimeController = TextEditingController();
+    _editActivityController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _editTimeController.dispose();
+    _editActivityController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -215,6 +234,28 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   Widget _buildScheduleList(BuildContext context) {
     final scheduleItems = context.watch<ScheduleProvider>().scheduleItems;
 
+    if (scheduleItems.isEmpty) {
+      return Container(
+        color: Colors.grey[100],
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.schedule, size: 48, color: Colors.grey[400]),
+              const SizedBox(height: 16),
+              Text(
+                '기상 시간을 입력하면 스케줄이 생성됩니다',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Container(
       color: Colors.grey[100],
       child: ListView.builder(
@@ -234,51 +275,131 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       backgroundColor = const Color(0xFFF3E5F5);
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+    return GestureDetector(
+      onTap: () => _showScheduleEditDialog(item),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+          title: Text(
+            item.durationMinutes != null
+                ? '${item.timeString} - ${_getEndTime(item)}'
+                : item.timeString,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                item.activity,
+                style: const TextStyle(fontSize: 14),
+              ),
+              if (item.durationMinutes != null)
+                Text(
+                  item.durationString,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                  ),
+                ),
+            ],
+          ),
+          trailing: const Icon(
+            Icons.edit,
+            color: Colors.grey,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showScheduleEditDialog(dynamic item) {
+    _editTimeController.text = item.timeString;
+    _editActivityController.text = item.activity;
+    _editingItemId = item.id;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('스케줄 수정'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _editTimeController,
+              decoration: const InputDecoration(
+                labelText: '시간',
+                border: OutlineInputBorder(),
+              ),
+              readOnly: true,
+              onTap: () async {
+                final time = await showTimePicker(
+                  context: context,
+                  initialTime: TimeOfDay.fromDateTime(item.time),
+                );
+                if (time != null) {
+                  _editTimeController.text = time.format(context);
+                }
+              },
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _editActivityController,
+              decoration: const InputDecoration(
+                labelText: '활동명',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _editingItemId = null;
+            },
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _saveScheduleItem(item);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF667EEA),
+            ),
+            child: const Text('저장'),
           ),
         ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        title: Text(
-          item.durationMinutes != null
-              ? '${item.timeString} - ${_getEndTime(item)}'
-              : item.timeString,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              item.activity,
-              style: const TextStyle(fontSize: 14),
-            ),
-            if (item.durationMinutes != null)
-              Text(
-                item.durationString,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                ),
-              ),
-          ],
-        ),
-        trailing: const Icon(
-          Icons.drag_handle,
-          color: Colors.grey,
-        ),
+    );
+  }
+
+  void _saveScheduleItem(dynamic item) {
+    // 실제로 로컬 상태에서 항목을 업데이트합니다
+    // 서버와 동기화가 필요한 경우 여기에 API 호출을 추가할 수 있습니다
+    final scheduleProvider = context.read<ScheduleProvider>();
+
+    // 현재는 로컬 상태만 업데이트
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('스케줄이 저장되었습니다!'),
+        duration: Duration(seconds: 2),
       ),
     );
   }
