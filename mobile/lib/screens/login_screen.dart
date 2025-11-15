@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:io' show Platform;
 import 'main_screen.dart';
+import '../services/storage_service.dart';
 
 /// 로그인 화면
 ///
@@ -208,7 +209,9 @@ class LoginScreen extends StatelessWidget {
     // TODO: 카카오 로그인 API 연동
     debugPrint('카카오 로그인 시도');
 
-    // 임시: 메인 화면으로 이동
+    // 임시: 더미 토큰 저장 후 메인 화면으로 이동
+    await _saveDummyCredentials();
+
     if (context.mounted) {
       Navigator.of(context).pushReplacementNamed(
         '/main',
@@ -222,7 +225,9 @@ class LoginScreen extends StatelessWidget {
     // TODO: 애플 로그인 API 연동
     debugPrint('애플 로그인 시도');
 
-    // 임시: 메인 화면으로 이동
+    // 임시: 더미 토큰 저장 후 메인 화면으로 이동
+    await _saveDummyCredentials();
+
     if (context.mounted) {
       Navigator.of(context).pushReplacementNamed(
         '/main',
@@ -236,7 +241,9 @@ class LoginScreen extends StatelessWidget {
     // TODO: 구글 로그인 API 연동
     debugPrint('구글 로그인 시도');
 
-    // 임시: 메인 화면으로 이동
+    // 임시: 더미 토큰 저장 후 메인 화면으로 이동
+    await _saveDummyCredentials();
+
     if (context.mounted) {
       Navigator.of(context).pushReplacementNamed(
         '/main',
@@ -296,5 +303,27 @@ class LoginScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  /// 더미 인증 정보 저장 (로컬 테스트용)
+  Future<void> _saveDummyCredentials() async {
+    final storageService = StorageService();
+
+    // 더미 토큰 생성 (임시 테스트용)
+    const dummyAccessToken = 'dummy_access_token_for_local_testing';
+    const dummyRefreshToken = 'dummy_refresh_token_for_local_testing';
+
+    // 토큰 저장
+    await storageService.saveAccessToken(dummyAccessToken);
+    await storageService.saveRefreshToken(dummyRefreshToken);
+
+    // 사용자 정보 저장
+    await storageService.saveUserInfo(
+      userId: 1, // 임시 사용자 ID
+      email: 'test@example.com',
+      name: 'Test User',
+    );
+
+    debugPrint('더미 인증 정보 저장 완료');
   }
 }
