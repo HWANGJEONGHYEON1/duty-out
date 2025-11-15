@@ -65,6 +65,39 @@ class BabyProvider with ChangeNotifier {
     }
   }
 
+  /// 아기 프로필 생성
+  Future<void> createBaby({
+    required String name,
+    required String birthDate,
+    required int gestationalWeeks,
+    required String gender,
+    String? profileImage,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _babyApiService.createBaby(
+        name: name,
+        birthDate: birthDate,
+        gestationalWeeks: gestationalWeeks,
+        gender: gender,
+        profileImage: profileImage,
+      );
+      _baby = Baby.fromJson(response);
+      _babies.add(_baby!);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '아기 프로필 생성 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   /// 아기 정보 수정
   Future<void> updateBabyInfo({
     required int babyId,
