@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/baby_provider.dart';
-import 'new_home_screen.dart';
+import 'schedule_screen.dart';
 import 'new_statistics_screen.dart';
 import 'community_screen.dart';
 import 'profile_screen.dart';
@@ -36,7 +36,7 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   final List<Widget> _screens = const [
-    NewHomeScreen(),
+    ScheduleScreen(),
     NewStatisticsScreen(),
     CommunityScreen(),
     ProfileScreen(),
