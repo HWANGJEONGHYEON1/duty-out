@@ -114,8 +114,59 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 30),
             // 아기 정보 표시 및 편집 (아기 정보는 항상 존재함)
             if (baby != null) ...[
-              _buildBabyInfoSection(baby, babyProvider),
-              const SizedBox(height: 40),
+              _buildEditableNameField(baby),
+              const SizedBox(height: 15),
+              if (_editError != null)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red[50],
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red[200]!),
+                  ),
+                  child: Text(
+                    _editError!,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.red[700],
+                    ),
+                  ),
+                ),
+              if (_editError != null) const SizedBox(height: 15),
+              _buildProfileField(
+                '생년월일',
+                DateFormat('yyyy년 M월 d일').format(baby.birthDate),
+              ),
+              const SizedBox(height: 15),
+              _buildProfileField(
+                '출생 주수',
+                '${baby.birthWeeks}주 (정상 출산)',
+              ),
+              const SizedBox(height: 15),
+              _buildProfileField(
+                '현재 월령',
+                '${baby.ageText} (생후 ${baby.ageInDays}일)',
+              ),
+              const SizedBox(height: 30),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Text(
+                  '아기 정보를 등록해주세요',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 30),
+              _buildBabyRegistrationForm(babyProvider),
             ],
             // 알림 설정
             _buildNotificationSettingsSection(),
@@ -361,6 +412,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                         autofocus: true,
+                        onSubmitted: (_) => _saveBabyName(
+                          context.read<BabyProvider>(),
+                          baby.id,
+                        ),
+                        onEditingComplete: () => _saveBabyName(
+                          context.read<BabyProvider>(),
+                          baby.id,
+                        ),
                       )
                     : Text(
                         baby.name,
@@ -374,20 +433,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
               GestureDetector(
                 onTap: _isSaving
                     ? null
-                    : () {
-                        setState(() {
-                          if (_isEditingName) {
-                            _isEditingName = false;
-                            _editError = null;
-                          } else {
+                    : () async {
+                        if (_isEditingName) {
+                          // 저장 후 닫기
+                          await _saveBabyName(
+                            context.read<BabyProvider>(),
+                            baby.id,
+                          );
+                        } else {
+                          // 편집 모드 활성화
+                          setState(() {
                             _isEditingName = true;
-                          }
-                        });
+                            _editError = null;
+                          });
+                        }
                       },
-                child: Icon(
-                  _isEditingName ? Icons.close : Icons.edit,
-                  color: Colors.grey[500],
-                  size: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF667EEA).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    _isEditingName ? Icons.check : Icons.edit,
+                    color: _isSaving ? Colors.grey[400] : const Color(0xFF667EEA),
+                    size: 18,
+                  ),
                 ),
               ),
             ],

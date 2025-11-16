@@ -163,6 +163,52 @@ class ScheduleProvider with ChangeNotifier {
     return next.time.difference(DateTime.now()).inMinutes;
   }
 
+  /// 스케줄 아이템 조정
+  ///
+  /// 특정 스케줄 아이템의 시간이 변경되면 이후 아이템들을 자동으로 조정합니다.
+  ///
+  /// [scheduleItemId] 변경된 스케줄 아이템 ID
+  /// [newStartTime] 새로운 시작 시간
+  /// [oldStartTime] 원래 시작 시간
+  Future<void> adjustScheduleItem({
+    required String scheduleItemId,
+    required DateTime newStartTime,
+    required DateTime oldStartTime,
+  }) async {
+    if (_currentBabyId == null || _currentBabyId == 0) {
+      throw Exception('아기 정보를 찾을 수 없습니다.');
+    }
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // 시간 차이 계산
+      final timeDifference = newStartTime.difference(oldStartTime);
+      final timeString =
+          '${newStartTime.hour.toString().padLeft(2, '0')}:${newStartTime.minute.toString().padLeft(2, '0')}';
+
+      // API 호출
+      final response = await _scheduleApiService.adjustSchedule(
+        babyId: _currentBabyId!,
+        scheduleItemId: int.parse(scheduleItemId),
+        actualStartTime: timeString,
+      );
+
+      // 응답을 로컬 상태에 반영
+      _scheduleItems = _parseScheduleItems(response['items']);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '스케줄 조정 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   /// 에러 초기화
   void clearError() {
     _error = null;
