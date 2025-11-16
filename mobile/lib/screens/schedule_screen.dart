@@ -537,24 +537,51 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         throw Exception('아기 정보를 찾을 수 없습니다.');
       }
 
-      // 시간 차이 계산
+      // 원래 시간
       final oldTime = item.time;
+
+      // 시간 차이 계산
       final timeDifference = newTime.difference(oldTime);
 
-      // TODO: API를 통해 스케줄 조정 (adjustSchedule)
-      // 현재는 로컬 상태만 업데이트
+      // API를 통해 스케줄 조정
+      setState(() {
+        _isLoadingSchedule = true;
+      });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('스케줄이 수정되었습니다!'),
-          duration: Duration(seconds: 2),
-        ),
+      await scheduleProvider.adjustScheduleItem(
+        scheduleItemId: item.id.toString(),
+        newStartTime: newTime,
+        oldStartTime: oldTime,
       );
+
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedule = false;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '스케줄이 수정되었습니다! '
+              '(${timeDifference.isNegative ? '-' : '+'}${timeDifference.inMinutes.abs()}분)',
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSchedule = false;
+          _error = '스케줄 수정 실패: $e';
+        });
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('오류: $e'),
-          duration: const Duration(seconds: 2),
+          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.red,
         ),
       );
     }
