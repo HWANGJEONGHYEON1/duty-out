@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   bool _babyLoaded = false;
+  int? _previousBabyId;
 
   @override
   void initState() {
@@ -38,6 +39,31 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         _babyLoaded = true;
       });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 아기가 새로 등록되었는지 감지
+    final babyProvider = context.watch<BabyProvider>();
+    final currentBabyId = babyProvider.baby?.id;
+
+    // 아기가 방금 등록된 경우 (이전에는 없었는데 지금 있음)
+    if (_previousBabyId == null && currentBabyId != null) {
+      _previousBabyId = currentBabyId;
+
+      // 1초 후 스케줄 탭으로 자동 전환
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _currentIndex = 0; // 스케줄 탭
+          });
+        }
+      });
+    } else if (currentBabyId != null) {
+      _previousBabyId = currentBabyId;
     }
   }
 
