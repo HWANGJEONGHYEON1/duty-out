@@ -8,6 +8,7 @@ Fixed the persistent unique constraint violation error on schedule creation and 
 1. **Unique Constraint Violation**: Fixed error when creating schedule multiple times for same baby/date
 2. **ScheduleItem Property Error**: Fixed 'scheduledTime' property not found in schedule editing
 3. **Multiple Save Buttons**: Consolidated name and schedule editing into single unified approach
+4. **Type Mismatch on Schedule Modification**: Fixed "type string is not a subtype int" error by converting String scheduleItemId to int
 
 ---
 
@@ -98,6 +99,25 @@ if (widget.item.time != null) {
 ```
 
 **Reason:** ScheduleItem model uses `time` property, not `scheduledTime`
+
+#### File: `mobile/lib/providers/schedule_provider.dart`
+**Lines 140-142**
+
+```dart
+// Added type conversion for scheduleItemId
+final scheduleItemIdInt = (scheduleItemId is String)
+    ? int.tryParse(scheduleItemId) ?? 0
+    : scheduleItemId;
+
+// Pass converted int value to API service
+await _scheduleApiService.adjustSchedule(
+  babyId: babyId as int,
+  scheduleItemId: scheduleItemIdInt,  // Now int, not String
+  actualStartTime: timeString,
+);
+```
+
+**Reason:** ScheduleItem.id is a String, but the API service expects an int. This conversion ensures type compatibility and prevents "type string is not a subtype int" errors.
 
 ---
 
@@ -212,6 +232,8 @@ Mobile displays adjusted schedule
 2. **1c2614c** - feat: Add inline baby name editing in schedule tab header with consolidated save button
 3. **18a9330** - fix: Add @Modifying annotation to deleteByBabyIdAndScheduleDate to ensure proper delete execution with flush
 4. **b0793ea** - fix: Change deleteByBabyIdAndScheduleDate return type from long to int to comply with @Modifying requirements
+5. **779c102** - docs: Add comprehensive PR summary with all changes and testing checklist
+6. **3835e1b** - fix: Add type conversion for scheduleItemId from String to int in adjustScheduleItem
 
 ---
 
