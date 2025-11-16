@@ -24,6 +24,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   int _gestationalWeeks = 39;
   bool _isRegisteringBaby = false;
 
+  // 기존 아기 정보 편집 상태
+  bool _isEditingAllInfo = false;
+  DateTime? _editBirthDate;
+  int _editGestationalWeeks = 39;
+  String _editGender = 'MALE';
+
   @override
   void initState() {
     super.initState();
