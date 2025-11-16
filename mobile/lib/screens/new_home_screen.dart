@@ -736,10 +736,10 @@ class _EditScheduleItemDialogState extends State<_EditScheduleItemDialog> {
   void initState() {
     super.initState();
     // 기존 시간으로 초기화
-    if (widget.item.scheduledTime != null) {
+    if (widget.item.time != null) {
       _selectedTime = TimeOfDay(
-        hour: widget.item.scheduledTime.hour,
-        minute: widget.item.scheduledTime.minute,
+        hour: widget.item.time.hour,
+        minute: widget.item.time.minute,
       );
     } else {
       _selectedTime = TimeOfDay.now();
