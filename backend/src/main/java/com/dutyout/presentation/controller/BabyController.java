@@ -1,6 +1,7 @@
 package com.dutyout.presentation.controller;
 
 import com.dutyout.application.dto.request.CreateBabyRequest;
+import com.dutyout.application.dto.request.UpdateBabyRequest;
 import com.dutyout.application.dto.response.BabyResponse;
 import com.dutyout.common.response.ApiResponse;
 import com.dutyout.domain.baby.entity.Baby;
@@ -67,7 +68,7 @@ public class BabyController {
     @Operation(summary = "아기 프로필 수정", description = "아기 이름이나 프로필 이미지를 수정합니다.")
     public ResponseEntity<ApiResponse<BabyResponse>> updateBaby(
             @PathVariable Long babyId,
-            @Valid @RequestBody CreateBabyRequest request) {
+            @Valid @RequestBody UpdateBabyRequest request) {
 
         Baby baby = babyService.updateBaby(babyId, request.getName(), request.getProfileImage());
         BabyResponse response = BabyResponse.from(baby);
@@ -82,3 +83,4 @@ public class BabyController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 }
+

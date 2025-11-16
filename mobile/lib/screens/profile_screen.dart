@@ -129,39 +129,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               if (_editError != null) const SizedBox(height: 15),
-              if (_isEditingName)
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : () => _saveBabyName(babyProvider, baby.id),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF667EEA),
-                      disabledBackgroundColor: Colors.grey[400],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isSaving
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : const Text(
-                            '저장',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
-                ),
-              if (_isEditingName) const SizedBox(height: 15),
               _buildProfileField(
                 '생년월일',
                 DateFormat('yyyy년 M월 d일').format(baby.birthDate),
@@ -492,6 +459,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           fontWeight: FontWeight.w600,
                         ),
                         autofocus: true,
+                        onSubmitted: (_) => _saveBabyName(
+                          context.read<BabyProvider>(),
+                          baby.id,
+                        ),
+                        onEditingComplete: () => _saveBabyName(
+                          context.read<BabyProvider>(),
+                          baby.id,
+                        ),
                       )
                     : Text(
                         baby.name,
@@ -505,20 +480,32 @@ class _ProfileScreenState extends State<ProfileScreen> {
               GestureDetector(
                 onTap: _isSaving
                     ? null
-                    : () {
-                        setState(() {
-                          if (_isEditingName) {
-                            _isEditingName = false;
-                            _editError = null;
-                          } else {
+                    : () async {
+                        if (_isEditingName) {
+                          // 저장 후 닫기
+                          await _saveBabyName(
+                            context.read<BabyProvider>(),
+                            baby.id,
+                          );
+                        } else {
+                          // 편집 모드 활성화
+                          setState(() {
                             _isEditingName = true;
-                          }
-                        });
+                            _editError = null;
+                          });
+                        }
                       },
-                child: Icon(
-                  _isEditingName ? Icons.close : Icons.edit,
-                  color: Colors.grey[500],
-                  size: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF667EEA).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    _isEditingName ? Icons.check : Icons.edit,
+                    color: _isSaving ? Colors.grey[400] : const Color(0xFF667EEA),
+                    size: 18,
+                  ),
                 ),
               ),
             ],
