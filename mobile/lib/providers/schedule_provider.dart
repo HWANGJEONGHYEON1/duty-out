@@ -115,6 +115,46 @@ class ScheduleProvider with ChangeNotifier {
     }).toList();
   }
 
+  /// 스케줄 항목 조정
+  ///
+  /// 특정 스케줄 항목의 시간을 변경하고 이후 항목들을 자동으로 조정합니다.
+  ///
+  /// [babyId] 아기 ID
+  /// [scheduleItemId] 조정할 스케줄 아이템 ID
+  /// [actualStartTime] 새로운 시작 시간
+  Future<void> adjustScheduleItem({
+    required dynamic babyId,
+    required dynamic scheduleItemId,
+    required DateTime actualStartTime,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      // API 호출
+      final timeString =
+          '${actualStartTime.hour.toString().padLeft(2, '0')}:${actualStartTime.minute.toString().padLeft(2, '0')}';
+
+      final response = await _scheduleApiService.adjustSchedule(
+        babyId: babyId,
+        scheduleItemId: scheduleItemId,
+        actualStartTime: timeString,
+      );
+
+      // 응답 파싱
+      _scheduleItems = _parseScheduleItems(response['items']);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '스케줄 조정 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   /// 기상 시간 변경 및 스케줄 재생성
   ///
   /// [babyId] 아기 ID (선택 - 없으면 현재 아기 ID 사용)
