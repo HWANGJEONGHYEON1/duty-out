@@ -136,9 +136,14 @@ class ScheduleProvider with ChangeNotifier {
       final timeString =
           '${actualStartTime.hour.toString().padLeft(2, '0')}:${actualStartTime.minute.toString().padLeft(2, '0')}';
 
+      // scheduleItemId를 int로 변환 (String일 경우 처리)
+      final scheduleItemIdInt = (scheduleItemId is String)
+          ? int.tryParse(scheduleItemId) ?? 0
+          : scheduleItemId;
+
       final response = await _scheduleApiService.adjustSchedule(
-        babyId: babyId,
-        scheduleItemId: scheduleItemId,
+        babyId: babyId as int,
+        scheduleItemId: scheduleItemIdInt,
         actualStartTime: timeString,
       );
 
