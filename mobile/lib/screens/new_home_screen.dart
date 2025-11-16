@@ -10,8 +10,6 @@ class NewHomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baby = context.watch<BabyProvider>().baby;
-
     return Scaffold(
       body: Column(
         children: [
@@ -29,24 +27,6 @@ class NewHomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      floatingActionButton: baby != null
-          ? FloatingActionButton.extended(
-              onPressed: () => _showScheduleRegistrationDialog(context),
-              icon: const Icon(Icons.add),
-              label: const Text('스케줄 생성'),
-              backgroundColor: const Color(0xFF667EEA),
-            )
-          : null,
-    );
-  }
-
-  // 스케줄 생성 다이얼로그
-  void _showScheduleRegistrationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return _ScheduleRegistrationDialog(parentContext: context);
-      },
     );
   }
 
@@ -600,148 +580,5 @@ class NewHomeScreen extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-// 스케줄 생성 다이얼로그
-class _ScheduleRegistrationDialog extends StatefulWidget {
-  final BuildContext parentContext;
-
-  const _ScheduleRegistrationDialog({required this.parentContext});
-
-  @override
-  State<_ScheduleRegistrationDialog> createState() => _ScheduleRegistrationDialogState();
-}
-
-class _ScheduleRegistrationDialogState extends State<_ScheduleRegistrationDialog> {
-  TimeOfDay _selectedTime = TimeOfDay.now();
-  bool _isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('기상 시간 설정'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('스케줄을 생성할 기상 시간을 선택해주세요'),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: _isLoading ? null : () => _selectTime(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF667EEA)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF667EEA),
-                    ),
-                  ),
-                  const Icon(Icons.access_time, color: Color(0xFF667EEA)),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: const Text('취소'),
-        ),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submitSchedule,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF667EEA),
-          ),
-          child: _isLoading
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text(
-                  '생성',
-                  style: TextStyle(color: Colors.white),
-                ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _selectTime(BuildContext context) async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _selectedTime,
-    );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
-    }
-  }
-
-  Future<void> _submitSchedule() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final scheduleProvider =
-          widget.parentContext.read<ScheduleProvider>();
-      final baby = widget.parentContext.read<BabyProvider>().baby;
-
-      if (baby == null) {
-        throw Exception('아기 정보를 찾을 수 없습니다');
-      }
-
-      // 선택한 시간으로 스케줄 생성
-      final wakeUpTime = DateTime(
-        2000,
-        1,
-        1,
-        _selectedTime.hour,
-        _selectedTime.minute,
-      );
-
-      await scheduleProvider.updateWakeTime(wakeUpTime, babyId: baby.id);
-
-      if (mounted) {
-        Navigator.pop(context);
-        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-          const SnackBar(
-            content: Text('스케줄이 생성되었습니다!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(widget.parentContext).showSnackBar(
-          SnackBar(
-            content: Text('스케줄 생성 실패: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
   }
 }

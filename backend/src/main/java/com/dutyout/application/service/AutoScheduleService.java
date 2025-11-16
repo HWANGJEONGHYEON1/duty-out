@@ -82,10 +82,9 @@ public class AutoScheduleService {
                 guideline.getRecommendedBedtimeMinute());
 
         // 3. 기존 스케줄 확인 및 삭제 (오늘 날짜)
-        // unique 제약 위반 방지를 위해 기존 스케줄을 먼저 삭제
         LocalDate today = LocalDate.now();
-        long deletedCount = dailyScheduleRepository.deleteByBabyIdAndScheduleDate(babyId, today);
-        log.info("기존 스케줄 삭제 완료 - 삭제 건수: {}", deletedCount);
+        dailyScheduleRepository.findByBabyIdAndScheduleDate(babyId, today)
+                .ifPresent(dailyScheduleRepository::delete);
 
         // 4. 스케줄 아이템 생성
         List<ScheduleItem> scheduleItems = buildScheduleItems(guideline, request, baby);

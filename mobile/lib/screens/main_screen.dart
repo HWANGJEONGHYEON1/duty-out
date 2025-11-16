@@ -16,6 +16,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  bool _babyLoaded = false;
 
   @override
   void initState() {
@@ -33,6 +34,12 @@ class _MainScreenState extends State<MainScreen> {
     } catch (e) {
       debugPrint('아기 정보 로드 실패: $e');
     }
+
+    if (mounted) {
+      setState(() {
+        _babyLoaded = true;
+      });
+    }
   }
 
   final List<Widget> _screens = const [
@@ -47,12 +54,11 @@ class _MainScreenState extends State<MainScreen> {
     final babyProvider = context.watch<BabyProvider>();
     final baby = babyProvider.baby;
 
-    // 아기 정보가 없으면 아기 등록 화면 표시
-    if (baby == null) {
+    // 아기 정보가 로드되고 없으면 등록 화면으로 이동
+    if (_babyLoaded && baby == null) {
       return const BabyRegistrationScreen();
     }
 
-    // 아기 정보가 있으면 메인 화면 표시
     return Scaffold(
       body: _screens[_currentIndex],
       bottomNavigationBar: Container(
@@ -84,45 +90,36 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNavItem(int index, String icon, String label, {bool enabled = true}) {
+  Widget _buildNavItem(int index, String icon, String label) {
     final isActive = _currentIndex == index;
 
     return GestureDetector(
-      onTap: enabled
-          ? () {
-              setState(() {
-                _currentIndex = index;
-              });
-            }
-          : null,
-      child: Opacity(
-        opacity: enabled ? 1.0 : 0.5,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                icon,
-                style: TextStyle(
-                  fontSize: 24,
-                  color: enabled
-                      ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
-                      : Colors.grey[400],
-                ),
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              icon,
+              style: TextStyle(
+                fontSize: 24,
+                color: isActive ? const Color(0xFF667EEA) : Colors.grey,
               ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: enabled
-                      ? (isActive ? const Color(0xFF667EEA) : Colors.grey)
-                      : Colors.grey[400],
-                ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: isActive ? const Color(0xFF667EEA) : Colors.grey,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

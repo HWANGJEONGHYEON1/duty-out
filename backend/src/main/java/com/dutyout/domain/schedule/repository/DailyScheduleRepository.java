@@ -22,7 +22,4 @@ public interface DailyScheduleRepository extends JpaRepository<DailySchedule, Lo
                                                                    @Param("scheduleDate") LocalDate scheduleDate);
 
     boolean existsByBabyIdAndScheduleDate(Long babyId, LocalDate scheduleDate);
-
-    // 스케줄 삭제 (기상 시간 변경 시 기존 스케줄 제거용)
-    long deleteByBabyIdAndScheduleDate(Long babyId, LocalDate scheduleDate);
 }
