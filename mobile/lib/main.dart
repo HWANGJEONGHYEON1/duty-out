@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'providers/baby_provider.dart';
 import 'providers/schedule_provider.dart';
@@ -33,7 +34,7 @@ class BabySleepApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.purple,
           scaffoldBackgroundColor: const Color(0xFFF8F9FA),
-          fontFamily: 'sans-serif',
+          textTheme: GoogleFonts.notoSansKrTextTheme(),
           useMaterial3: true,
         ),
         home: const LoginScreen(),

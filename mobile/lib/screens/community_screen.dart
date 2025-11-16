@@ -284,7 +284,6 @@ class CommunityScreen extends StatelessWidget {
                   provider.addPost(
                     titleController.text,
                     contentController.text,
-                    '익명${DateTime.now().millisecondsSinceEpoch % 1000}',
                   );
                 } else {
                   provider.updatePost(
