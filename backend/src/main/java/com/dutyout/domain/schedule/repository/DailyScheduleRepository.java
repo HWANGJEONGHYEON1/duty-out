@@ -27,5 +27,5 @@ public interface DailyScheduleRepository extends JpaRepository<DailySchedule, Lo
     // 스케줄 삭제 (기상 시간 변경 시 기존 스케줄 제거용)
     @Modifying(flushAutomatically = true, clearAutomatically = true)
     @Query("DELETE FROM DailySchedule d WHERE d.babyId = :babyId AND d.scheduleDate = :scheduleDate")
-    long deleteByBabyIdAndScheduleDate(@Param("babyId") Long babyId, @Param("scheduleDate") LocalDate scheduleDate);
+    int deleteByBabyIdAndScheduleDate(@Param("babyId") Long babyId, @Param("scheduleDate") LocalDate scheduleDate);
 }
