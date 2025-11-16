@@ -5,8 +5,37 @@ import '../providers/baby_provider.dart';
 import '../providers/schedule_provider.dart';
 import '../providers/statistics_provider.dart';
 
-class NewHomeScreen extends StatelessWidget {
+class NewHomeScreen extends StatefulWidget {
   const NewHomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<NewHomeScreen> createState() => _NewHomeScreenState();
+}
+
+class _NewHomeScreenState extends State<NewHomeScreen> {
+  late TextEditingController _nameController;
+  bool _isEditingName = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final baby = context.watch<BabyProvider>().baby;
+    if (baby != null && _nameController.text != baby.name) {
+      _nameController.text = baby.name;
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,13 +106,58 @@ class NewHomeScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 5),
-              Text(
-                baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
+              if (_isEditingName && baby != null)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _nameController,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.white),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.white),
+                          ),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 32,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        icon: const Icon(Icons.check, color: Colors.white, size: 20),
+                        onPressed: () => _saveBabyName(context),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _isEditingName = true;
+                    });
+                  },
+                  child: Text(
+                    baby != null ? '👶 ${baby.name} (${baby.ageText})' : '👶',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
           Positioned(
@@ -100,6 +174,54 @@ class NewHomeScreen extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _saveBabyName(BuildContext context) async {
+    final newName = _nameController.text.trim();
+    if (newName.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('이름을 입력해주세요'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final babyProvider = context.read<BabyProvider>();
+      final baby = babyProvider.baby;
+
+      if (baby == null) {
+        throw Exception('아기 정보를 찾을 수 없습니다');
+      }
+
+      await babyProvider.updateBabyInfo(
+        babyId: baby.id,
+        name: newName,
+      );
+
+      if (mounted) {
+        setState(() {
+          _isEditingName = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('이름이 수정되었습니다!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('이름 수정 실패: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showRecommendedInfo(BuildContext context) {
