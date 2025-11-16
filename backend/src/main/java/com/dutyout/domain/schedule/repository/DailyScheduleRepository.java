@@ -2,6 +2,7 @@ package com.dutyout.domain.schedule.repository;
 
 import com.dutyout.domain.schedule.entity.DailySchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,5 +25,7 @@ public interface DailyScheduleRepository extends JpaRepository<DailySchedule, Lo
     boolean existsByBabyIdAndScheduleDate(Long babyId, LocalDate scheduleDate);
 
     // 스케줄 삭제 (기상 시간 변경 시 기존 스케줄 제거용)
-    long deleteByBabyIdAndScheduleDate(Long babyId, LocalDate scheduleDate);
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("DELETE FROM DailySchedule d WHERE d.babyId = :babyId AND d.scheduleDate = :scheduleDate")
+    long deleteByBabyIdAndScheduleDate(@Param("babyId") Long babyId, @Param("scheduleDate") LocalDate scheduleDate);
 }
