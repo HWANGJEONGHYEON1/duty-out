@@ -15,6 +15,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _nextScheduleNotification = true;
   bool _sleepRecordReminder = true;
   late TextEditingController _nameController;
+  late TextEditingController _babyNameController;
   bool _isSaving = false;
   String? _editError;
 

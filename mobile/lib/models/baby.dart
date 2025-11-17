@@ -3,12 +3,14 @@ class Baby {
   final String name;
   final DateTime birthDate;
   final int birthWeeks;
+  final String? gender;
 
   Baby({
     required this.id,
     required this.name,
     required this.birthDate,
     this.birthWeeks = 39,
+    this.gender,
   });
 
   /// JSON으로부터 Baby 객체 생성
@@ -20,6 +22,7 @@ class Baby {
           ? DateTime.parse(json['birthDate'])
           : json['birthDate'],
       birthWeeks: json['birthWeeks'] ?? 39,
+      gender: json['gender'],
     );
   }
 
@@ -30,6 +33,7 @@ class Baby {
       'name': name,
       'birthDate': birthDate.toIso8601String(),
       'birthWeeks': birthWeeks,
+      if (gender != null) 'gender': gender,
     };
   }
 
