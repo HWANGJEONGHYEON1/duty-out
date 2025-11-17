@@ -103,7 +103,7 @@ public class Baby extends BaseTimeEntity {
     /**
      * 아기 정보 업데이트 (모든 필드)
      */
-    public void updateBabyInfo(String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks) {
+    public void updateBabyInfo(String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks, String gender) {
         if (name != null && !name.trim().isEmpty()) {
             validateName(name);
             this.name = name;
@@ -118,6 +118,9 @@ public class Baby extends BaseTimeEntity {
         if (gestationalWeeks != null) {
             validateGestationalWeeks(gestationalWeeks);
             this.gestationalWeeks = gestationalWeeks;
+        }
+        if (gender != null) {
+            this.gender = Gender.valueOf(gender);
         }
     }
 

@@ -130,6 +130,7 @@ class BabyProvider with ChangeNotifier {
     String? name,
     DateTime? birthDate,
     int? gestationalWeeks,
+    String? gender,
   }) async {
     _isLoading = true;
     _error = null;
@@ -142,6 +143,7 @@ class BabyProvider with ChangeNotifier {
         birthDate: birthDate != null ?
           '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}' : null,
         gestationalWeeks: gestationalWeeks,
+        gender: gender,
       );
       _baby = Baby.fromJson(response);
 

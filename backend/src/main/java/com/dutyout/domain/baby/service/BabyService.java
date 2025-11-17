@@ -59,9 +59,9 @@ public class BabyService {
      * 아기 프로필 업데이트 (모든 정보)
      */
     @Transactional
-    public Baby updateBaby(Long babyId, String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks) {
+    public Baby updateBaby(Long babyId, String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks, String gender) {
         Baby baby = getBaby(babyId);
-        baby.updateBabyInfo(name, profileImage, birthDate, gestationalWeeks);
+        baby.updateBabyInfo(name, profileImage, birthDate, gestationalWeeks, gender);
         log.info("아기 프로필 업데이트: babyId={}, name={}", babyId, name);
         return baby;
     }

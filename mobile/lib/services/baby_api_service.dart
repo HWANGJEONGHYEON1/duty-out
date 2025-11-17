@@ -75,18 +75,21 @@ class BabyApiService {
   /// [name] 아기 이름 (선택)
   /// [birthDate] 생년월일 (YYYY-MM-DD 형식, 선택)
   /// [gestationalWeeks] 출생 주수 (선택)
+  /// [gender] 성별 (MALE, FEMALE, 선택)
   /// [profileImage] 프로필 이미지 (선택)
   Future<Map<String, dynamic>> updateBaby({
     required int babyId,
     String? name,
     String? birthDate,
     int? gestationalWeeks,
+    String? gender,
     String? profileImage,
   }) async {
     final data = <String, dynamic>{};
     if (name != null) data['name'] = name;
     if (birthDate != null) data['birthDate'] = birthDate;
     if (gestationalWeeks != null) data['gestationalWeeks'] = gestationalWeeks;
+    if (gender != null) data['gender'] = gender;
     if (profileImage != null) data['profileImage'] = profileImage;
 
     final response = await _apiClient.put(

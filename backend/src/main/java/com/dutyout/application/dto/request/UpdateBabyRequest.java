@@ -20,4 +20,6 @@ public class UpdateBabyRequest {
     private LocalDate birthDate;
 
     private Integer gestationalWeeks;
+
+    private String gender;
 }

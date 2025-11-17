@@ -15,8 +15,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _nextScheduleNotification = true;
   bool _sleepRecordReminder = true;
   late TextEditingController _nameController;
-  late TextEditingController _babyNameController;
-  bool _isEditingName = false;
   bool _isSaving = false;
   String? _editError;
 
@@ -113,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            _buildAvatar(),
+            _buildAvatar(baby),
             const SizedBox(height: 30),
             // 아기 정보 영역
             if (baby == null) ...[
@@ -171,15 +169,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _isEditingAllInfo = !_isEditingAllInfo;
                   if (_isEditingAllInfo) {
                     // 편집 모드 진입 시 현재 값으로 초기화
+                    _nameController.text = baby.name;
                     _editBirthDate = baby.birthDate;
                     _editGestationalWeeks = baby.birthWeeks;
+                    _editGender = baby.gender ?? 'MALE';
                   }
                 });
               },
               icon: Icon(_isEditingAllInfo ? Icons.close : Icons.edit),
               label: Text(_isEditingAllInfo ? '취소' : '수정'),
               style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF667EEA),
+                foregroundColor: _getGenderColor(baby.gender),
               ),
             ),
           ],
@@ -208,45 +208,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         if (_editError != null) const SizedBox(height: 15),
 
-        if (_isEditingName)
-          SizedBox(
-            width: double.infinity,
-            height: 48,
-            child: ElevatedButton(
-              onPressed: _isSaving ? null : () => _saveBabyName(babyProvider, baby.id),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF667EEA),
-                disabledBackgroundColor: Colors.grey[400],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: _isSaving
-                  ? const SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        strokeWidth: 2,
-                      ),
-                    )
-                  : const Text(
-                      '저장',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        if (_isEditingName) const SizedBox(height: 15),
-
-        // 편집 모드: 생년월일 수정
+        // 편집 모드: 모든 정보 수정
         if (_isEditingAllInfo) ...[
           _buildEditableBirthDateField(),
           const SizedBox(height: 15),
           _buildEditableGestationalWeeksField(),
+          const SizedBox(height: 15),
+          _buildEditableGenderField(),
           const SizedBox(height: 15),
           _buildProfileField(
             '현재 월령',
@@ -294,6 +262,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _buildProfileField(
             '출생 주수',
             '${baby.birthWeeks}주',
+          ),
+          const SizedBox(height: 15),
+          _buildProfileField(
+            '성별',
+            baby.gender == 'FEMALE' ? '여아' : '남아',
           ),
           const SizedBox(height: 15),
           _buildProfileField(
@@ -779,7 +752,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             children: [
               Expanded(
-                child: _isEditingName
+                child: _isEditingAllInfo
                     ? TextField(
                         controller: _nameController,
                         decoration: InputDecoration(
@@ -794,33 +767,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         autofocus: true,
                       )
-                    : Text(
-                        baby.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    : GestureDetector(
+                        onTap: null,
+                        child: Text(
+                          baby.name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                       ),
-              ),
-              const SizedBox(width: 10),
-              GestureDetector(
-                onTap: _isSaving
-                    ? null
-                    : () {
-                        setState(() {
-                          if (_isEditingName) {
-                            _isEditingName = false;
-                            _editError = null;
-                          } else {
-                            _isEditingName = true;
-                          }
-                        });
-                      },
-                child: Icon(
-                  _isEditingName ? Icons.close : Icons.edit,
-                  color: Colors.grey[500],
-                  size: 20,
-                ),
               ),
             ],
           ),
@@ -829,58 +784,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _saveBabyName(BabyProvider babyProvider, int babyId) async {
-    if (_nameController.text.isEmpty) {
-      setState(() {
-        _editError = '아기 이름을 입력해주세요';
-      });
-      return;
-    }
+  Widget _buildAvatar(Baby? baby) {
+    final isFemale = baby?.gender == 'FEMALE';
+    final colors = isFemale
+        ? const [Color(0xFFE91E63), Color(0xFFC2185B)]  // Pink gradient
+        : const [Color(0xFF667EEA), Color(0xFF764BA2)];  // Blue gradient
 
-    setState(() {
-      _isSaving = true;
-      _editError = null;
-    });
-
-    try {
-      await babyProvider.updateBabyInfo(
-        babyId: babyId,
-        name: _nameController.text,
-      );
-
-      if (mounted) {
-        setState(() {
-          _isEditingName = false;
-          _isSaving = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('아기 정보가 저장되었습니다!'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _editError = '저장 실패: $e';
-          _isSaving = false;
-        });
-      }
-    }
-  }
-
-  Widget _buildAvatar() {
     return Container(
       width: 100,
       height: 100,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
+          colors: colors,
         ),
       ),
       child: const Center(
@@ -1119,6 +1037,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  Widget _buildEditableGenderField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '성별',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _editGender = 'MALE';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: _editGender == 'MALE'
+                          ? const Color(0xFF667EEA)
+                          : Colors.grey[300]!,
+                      width: _editGender == 'MALE' ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    color: _editGender == 'MALE'
+                        ? const Color(0xFF667EEA).withOpacity(0.1)
+                        : Colors.white,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '남아',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _editGender == 'MALE'
+                            ? const Color(0xFF667EEA)
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _editGender = 'FEMALE';
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: _editGender == 'FEMALE'
+                          ? const Color(0xFFE91E63)
+                          : Colors.grey[300]!,
+                      width: _editGender == 'FEMALE' ? 2 : 1,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    color: _editGender == 'FEMALE'
+                        ? const Color(0xFFE91E63).withOpacity(0.1)
+                        : Colors.white,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '여아',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: _editGender == 'FEMALE'
+                            ? const Color(0xFFE91E63)
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // 성별에 따른 색상 반환
+  Color _getGenderColor(String? gender) {
+    if (gender == 'FEMALE') {
+      return const Color(0xFFE91E63);  // Pink
+    }
+    return const Color(0xFF667EEA);  // Blue (default)
+  }
+
   // 모든 정보 저장 메서드
   Future<void> _saveAllBabyInfo(BabyProvider babyProvider, int babyId) async {
     if (_editBirthDate == null) {
@@ -1134,12 +1154,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // 이름과 생년월일, 출생주수를 함께 저장
+      // 모든 정보를 함께 저장
       await babyProvider.updateBabyAllInfo(
         babyId: babyId,
         name: _nameController.text.isNotEmpty ? _nameController.text : null,
         birthDate: _editBirthDate,
         gestationalWeeks: _editGestationalWeeks,
+        gender: _editGender,
       );
 
       if (mounted) {
