@@ -17,6 +17,8 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   // 편집 관련 변수
   late TextEditingController _editTimeController;
   late TextEditingController _editActivityController;
+  late TextEditingController _feedingAmountController;
+  late TextEditingController _sleepDurationController;
   String? _editingItemId;
 
   @override
@@ -24,12 +26,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     super.initState();
     _editTimeController = TextEditingController();
     _editActivityController = TextEditingController();
+    _feedingAmountController = TextEditingController();
+    _sleepDurationController = TextEditingController();
   }
 
   @override
   void dispose() {
     _editTimeController.dispose();
     _editActivityController.dispose();
+    _feedingAmountController.dispose();
+    _sleepDurationController.dispose();
     super.dispose();
   }
 
@@ -39,6 +45,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
       body: Column(
         children: [
           _buildHeader(context),
+          _buildTodaySummary(context),
           _buildWakeTimeInput(context),
           Expanded(
             child: _buildScheduleList(context),
@@ -77,6 +84,167 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 오늘의 수유/수면 요약
+  Widget _buildTodaySummary(BuildContext context) {
+    final scheduleItems = context.watch<ScheduleProvider>().scheduleItems;
+
+    // 오늘 수유량 집계
+    int totalFeeding = 0;
+    int feedingCount = 0;
+    for (var item in scheduleItems) {
+      if (item.type == 'feed' && item.feedingAmount != null) {
+        totalFeeding += item.feedingAmount!;
+        feedingCount++;
+      }
+    }
+
+    // 오늘 수면 시간 집계
+    int totalSleep = 0;
+    int sleepCount = 0;
+    for (var item in scheduleItems) {
+      if (item.type == 'sleep' && item.actualSleepDuration != null) {
+        totalSleep += item.actualSleepDuration!;
+        sleepCount++;
+      }
+    }
+
+    final sleepHours = totalSleep ~/ 60;
+    final sleepMinutes = totalSleep % 60;
+
+    return Container(
+      width: double.infinity,
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+      child: Row(
+        children: [
+          // 오늘 수유
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF3E0),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFFF9800).withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF9800).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.restaurant,
+                          size: 16,
+                          color: Color(0xFFFF9800),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '오늘 수유',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '$totalFeeding ml',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFFFF9800),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$feedingCount회 기록',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // 오늘 수면
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3E5F5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFF9C27B0).withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF9C27B0).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.nights_stay,
+                          size: 16,
+                          color: Color(0xFF9C27B0),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '오늘 수면',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    sleepHours > 0 ? '${sleepHours}h ${sleepMinutes}m' : '${sleepMinutes}m',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF9C27B0),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$sleepCount회 기록',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -410,6 +578,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     final icon = config['icon'] as IconData;
     final iconColor = config['iconColor'] as Color;
 
+    // 수유량 또는 수면 시간 표시
+    String? recordInfo;
+    if (item.type == 'feed' && item.feedingAmount != null) {
+      recordInfo = '${item.feedingAmount}ml 기록됨';
+    } else if (item.type == 'sleep' && item.actualSleepDuration != null) {
+      final hours = item.actualSleepDuration ~/ 60;
+      final minutes = item.actualSleepDuration % 60;
+      recordInfo = hours > 0 ? '${hours}시간 ${minutes}분 기록됨' : '${minutes}분 기록됨';
+    }
+
     return GestureDetector(
       onTap: () => _showScheduleEditDialog(item),
       child: Container(
@@ -476,8 +654,39 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                       ),
                     ),
 
+                    // 기록 정보 (수유량 또는 수면 시간)
+                    if (recordInfo != null) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: iconColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 12,
+                              color: iconColor,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              recordInfo,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: iconColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
                     // 소요 시간
-                    if (item.durationMinutes != null) ...[
+                    if (item.durationMinutes != null && item.type != 'sleep') ...[
                       const SizedBox(height: 4),
                       Row(
                         children: [
@@ -525,42 +734,89 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   void _showScheduleEditDialog(dynamic item) {
     _editTimeController.text = item.timeString;
     _editActivityController.text = item.activity;
+    _feedingAmountController.text = item.feedingAmount?.toString() ?? '';
+    _sleepDurationController.text = item.actualSleepDuration?.toString() ?? '';
     _editingItemId = item.id;
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('스케줄 수정'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _editTimeController,
-              decoration: const InputDecoration(
-                labelText: '시간',
-                border: OutlineInputBorder(),
+        title: Text('${item.activity} 수정'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _editTimeController,
+                decoration: const InputDecoration(
+                  labelText: '시간',
+                  border: OutlineInputBorder(),
+                ),
+                readOnly: true,
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(item.time),
+                  );
+                  if (time != null) {
+                    _editTimeController.text = time.format(context);
+                  }
+                },
               ),
-              readOnly: true,
-              onTap: () async {
-                final time = await showTimePicker(
-                  context: context,
-                  initialTime: TimeOfDay.fromDateTime(item.time),
-                );
-                if (time != null) {
-                  _editTimeController.text = time.format(context);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _editActivityController,
-              decoration: const InputDecoration(
-                labelText: '활동명',
-                border: OutlineInputBorder(),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _editActivityController,
+                decoration: const InputDecoration(
+                  labelText: '활동명',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 2,
               ),
-              maxLines: 2,
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              // 수유 타입인 경우 수유량 입력
+              if (item.type == 'feed') ...[
+                TextField(
+                  controller: _feedingAmountController,
+                  decoration: const InputDecoration(
+                    labelText: '수유량 (ml)',
+                    border: OutlineInputBorder(),
+                    suffixText: 'ml',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '실제 수유한 양을 입력해주세요',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+
+              // 수면 타입인 경우 수면 시간 입력
+              if (item.type == 'sleep') ...[
+                TextField(
+                  controller: _sleepDurationController,
+                  decoration: const InputDecoration(
+                    labelText: '실제 수면 시간 (분)',
+                    border: OutlineInputBorder(),
+                    suffixText: '분',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '실제로 잔 시간을 분 단위로 입력해주세요',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -578,7 +834,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF667EEA),
             ),
-            child: const Text('저장'),
+            child: const Text('저장', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -586,14 +842,25 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
   }
 
   void _saveScheduleItem(dynamic item) {
-    // 실제로 로컬 상태에서 항목을 업데이트합니다
-    // 서버와 동기화가 필요한 경우 여기에 API 호출을 추가할 수 있습니다
-    final scheduleProvider = context.read<ScheduleProvider>();
+    // 수유량 저장
+    if (item.type == 'feed' && _feedingAmountController.text.isNotEmpty) {
+      item.feedingAmount = int.tryParse(_feedingAmountController.text);
+      item.actualFeedingTime = DateTime.now();
+    }
 
-    // 현재는 로컬 상태만 업데이트
+    // 수면 시간 저장
+    if (item.type == 'sleep' && _sleepDurationController.text.isNotEmpty) {
+      item.actualSleepDuration = int.tryParse(_sleepDurationController.text);
+      item.actualSleepStartTime = DateTime.now();
+    }
+
+    setState(() {
+      // UI 업데이트
+    });
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text('스케줄이 저장되었습니다!'),
+        content: Text('기록이 저장되었습니다!'),
         duration: Duration(seconds: 2),
       ),
     );
