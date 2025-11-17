@@ -21,6 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   DateTime? _selectedBirthDate;
   int _gestationalWeeks = 39;
+  String _selectedGender = 'MALE';
   bool _isRegisteringBaby = false;
 
   // 기존 아기 정보 편집 상태
@@ -573,6 +574,91 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
+            const SizedBox(height: 24),
+
+            // 성별 선택
+            _buildFormField(
+              label: '성별',
+              hint: '아기의 성별을 선택하세요',
+              icon: Icons.favorite,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedGender = 'MALE';
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _selectedGender == 'MALE'
+                                ? const Color(0xFF667EEA)
+                                : Colors.grey[300]!,
+                            width: _selectedGender == 'MALE' ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          color: _selectedGender == 'MALE'
+                              ? const Color(0xFF667EEA).withOpacity(0.1)
+                              : Colors.white,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '남아 👦',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: _selectedGender == 'MALE'
+                                  ? const Color(0xFF667EEA)
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedGender = 'FEMALE';
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _selectedGender == 'FEMALE'
+                                ? const Color(0xFFE91E63)
+                                : Colors.grey[300]!,
+                            width: _selectedGender == 'FEMALE' ? 2 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          color: _selectedGender == 'FEMALE'
+                              ? const Color(0xFFE91E63).withOpacity(0.1)
+                              : Colors.white,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '여아 👧',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: _selectedGender == 'FEMALE'
+                                  ? const Color(0xFFE91E63)
+                                  : Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 32),
 
             // 등록 버튼
@@ -696,7 +782,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         name: _babyNameController.text,
         birthDate: DateFormat('yyyy-MM-dd').format(_selectedBirthDate!),
         gestationalWeeks: _gestationalWeeks,
-        gender: 'MALE',
+        gender: _selectedGender,
       );
 
       if (mounted) {
@@ -705,6 +791,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           _isRegisteringBaby = false;
           _selectedBirthDate = null;
           _gestationalWeeks = 39;
+          _selectedGender = 'MALE';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
