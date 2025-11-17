@@ -1134,11 +1134,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
 
     try {
-      // TODO: 백엔드에서 모든 정보 업데이트 API 호출
-      // 현재는 생년월일과 출생주수도 함께 저장해야 함
-      await babyProvider.updateBabyInfo(
+      // 이름과 생년월일, 출생주수를 함께 저장
+      await babyProvider.updateBabyAllInfo(
         babyId: babyId,
-        name: _nameController.text,
+        name: _nameController.text.isNotEmpty ? _nameController.text : null,
+        birthDate: _editBirthDate,
+        gestationalWeeks: _editGestationalWeeks,
       );
 
       if (mounted) {

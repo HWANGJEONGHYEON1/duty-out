@@ -101,7 +101,28 @@ public class Baby extends BaseTimeEntity {
     }
 
     /**
-     * 프로필 업데이트
+     * 아기 정보 업데이트 (모든 필드)
+     */
+    public void updateBabyInfo(String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks) {
+        if (name != null && !name.trim().isEmpty()) {
+            validateName(name);
+            this.name = name;
+        }
+        if (profileImage != null) {
+            this.profileImage = profileImage;
+        }
+        if (birthDate != null) {
+            validateBirthDate(birthDate);
+            this.birthDate = birthDate;
+        }
+        if (gestationalWeeks != null) {
+            validateGestationalWeeks(gestationalWeeks);
+            this.gestationalWeeks = gestationalWeeks;
+        }
+    }
+
+    /**
+     * 프로필 업데이트 (이름, 프로필 이미지)
      */
     public void updateProfile(String name, String profileImage) {
         if (name != null && !name.trim().isEmpty()) {

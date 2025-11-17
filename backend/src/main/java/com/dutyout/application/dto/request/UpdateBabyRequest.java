@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -14,4 +16,8 @@ public class UpdateBabyRequest {
     private String name;
 
     private String profileImage;
+
+    private LocalDate birthDate;
+
+    private Integer gestationalWeeks;
 }

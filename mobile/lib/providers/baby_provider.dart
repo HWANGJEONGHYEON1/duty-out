@@ -98,7 +98,7 @@ class BabyProvider with ChangeNotifier {
     }
   }
 
-  /// 아기 정보 수정
+  /// 아기 정보 수정 (이름만)
   Future<void> updateBabyInfo({
     required int babyId,
     required String name,
@@ -111,6 +111,37 @@ class BabyProvider with ChangeNotifier {
       final response = await _babyApiService.updateBaby(
         babyId: babyId,
         name: name,
+      );
+      _baby = Baby.fromJson(response);
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '아기 정보 수정 실패: $e';
+      _isLoading = false;
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  /// 아기 정보 수정 (모든 정보)
+  Future<void> updateBabyAllInfo({
+    required int babyId,
+    String? name,
+    DateTime? birthDate,
+    int? gestationalWeeks,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final response = await _babyApiService.updateBaby(
+        babyId: babyId,
+        name: name,
+        birthDate: birthDate != null ?
+          '${birthDate.year}-${birthDate.month.toString().padLeft(2, '0')}-${birthDate.day.toString().padLeft(2, '0')}' : null,
+        gestationalWeeks: gestationalWeeks,
       );
       _baby = Baby.fromJson(response);
 
