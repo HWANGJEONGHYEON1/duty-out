@@ -827,9 +827,9 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
             child: const Text('취소'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              _saveScheduleItem(item);
+              await _saveScheduleItem(item);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF667EEA),
@@ -841,29 +841,54 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     );
   }
 
-  void _saveScheduleItem(dynamic item) {
-    // 수유량 저장
-    if (item.type == 'feed' && _feedingAmountController.text.isNotEmpty) {
-      item.feedingAmount = int.tryParse(_feedingAmountController.text);
-      item.actualFeedingTime = DateTime.now();
+  Future<void> _saveScheduleItem(dynamic item) async {
+    try {
+      int? feedingAmount;
+      int? sleepDuration;
+
+      // 수유량 저장
+      if (item.type == 'feed' && _feedingAmountController.text.isNotEmpty) {
+        feedingAmount = int.tryParse(_feedingAmountController.text);
+        item.feedingAmount = feedingAmount;
+      }
+
+      // 수면 시간 저장
+      if (item.type == 'sleep' && _sleepDurationController.text.isNotEmpty) {
+        sleepDuration = int.tryParse(_sleepDurationController.text);
+        item.actualSleepDuration = sleepDuration;
+      }
+
+      // API 호출하여 서버에 저장
+      final scheduleProvider =
+          Provider.of<ScheduleProvider>(context, listen: false);
+      await scheduleProvider.updateScheduleItem(
+        itemId: item.id,
+        feedingAmount: feedingAmount,
+        actualSleepDuration: sleepDuration,
+      );
+
+      setState(() {
+        // UI 업데이트
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('기록이 저장되었습니다!'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('저장 실패: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
-
-    // 수면 시간 저장
-    if (item.type == 'sleep' && _sleepDurationController.text.isNotEmpty) {
-      item.actualSleepDuration = int.tryParse(_sleepDurationController.text);
-      item.actualSleepStartTime = DateTime.now();
-    }
-
-    setState(() {
-      // UI 업데이트
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('기록이 저장되었습니다!'),
-        duration: Duration(seconds: 2),
-      ),
-    );
   }
 
   String _getEndTime(dynamic item) {

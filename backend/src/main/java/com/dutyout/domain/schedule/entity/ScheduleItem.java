@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -41,6 +42,19 @@ public class ScheduleItem extends BaseTimeEntity {
     @Column(length = 200)
     private String note;
 
+    // 수유 및 수면 기록 필드
+    @Column
+    private Integer feedingAmount; // 수유량 (ml)
+
+    @Column
+    private Integer actualSleepDuration; // 실제 수면 시간 (분)
+
+    @Column
+    private LocalDateTime actualFeedingTime; // 실제 수유 시간
+
+    @Column
+    private LocalDateTime actualSleepStartTime; // 실제 수면 시작 시간
+
     @Builder
     private ScheduleItem(ActivityType activityType, LocalTime scheduledTime,
                          Integer durationMinutes, String note) {
@@ -73,6 +87,22 @@ public class ScheduleItem extends BaseTimeEntity {
      */
     public void updateDuration(Integer durationMinutes) {
         this.durationMinutes = durationMinutes;
+    }
+
+    /**
+     * 수유량 기록
+     */
+    public void recordFeeding(Integer feedingAmount) {
+        this.feedingAmount = feedingAmount;
+        this.actualFeedingTime = LocalDateTime.now();
+    }
+
+    /**
+     * 수면 시간 기록
+     */
+    public void recordSleep(Integer durationMinutes) {
+        this.actualSleepDuration = durationMinutes;
+        this.actualSleepStartTime = LocalDateTime.now();
     }
 
     // Validation 메서드들
