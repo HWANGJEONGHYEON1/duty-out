@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -55,10 +56,21 @@ public class BabyService {
     }
 
     /**
-     * 아기 프로필 업데이트
+     * 아기 프로필 업데이트 (모든 정보)
      */
     @Transactional
-    public Baby updateBaby(Long babyId, String name, String profileImage) {
+    public Baby updateBaby(Long babyId, String name, String profileImage, LocalDate birthDate, Integer gestationalWeeks) {
+        Baby baby = getBaby(babyId);
+        baby.updateBabyInfo(name, profileImage, birthDate, gestationalWeeks);
+        log.info("아기 프로필 업데이트: babyId={}, name={}", babyId, name);
+        return baby;
+    }
+
+    /**
+     * 아기 프로필 업데이트 (이름, 프로필 이미지만)
+     */
+    @Transactional
+    public Baby updateBabyProfile(Long babyId, String name, String profileImage) {
         Baby baby = getBaby(babyId);
         baby.updateProfile(name, profileImage);
         log.info("아기 프로필 업데이트: babyId={}", babyId);
