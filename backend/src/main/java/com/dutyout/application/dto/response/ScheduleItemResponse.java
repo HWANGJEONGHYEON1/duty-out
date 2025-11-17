@@ -5,6 +5,7 @@ import com.dutyout.domain.schedule.entity.ScheduleItem;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Getter
@@ -16,6 +17,10 @@ public class ScheduleItemResponse {
     private LocalTime scheduledTime;
     private Integer durationMinutes;
     private String note;
+    private Integer feedingAmount;
+    private Integer actualSleepDuration;
+    private LocalDateTime actualFeedingTime;
+    private LocalDateTime actualSleepStartTime;
 
     public static ScheduleItemResponse from(ScheduleItem item) {
         return ScheduleItemResponse.builder()
@@ -24,6 +29,10 @@ public class ScheduleItemResponse {
                 .scheduledTime(item.getScheduledTime())
                 .durationMinutes(item.getDurationMinutes())
                 .note(item.getNote())
+                .feedingAmount(item.getFeedingAmount())
+                .actualSleepDuration(item.getActualSleepDuration())
+                .actualFeedingTime(item.getActualFeedingTime())
+                .actualSleepStartTime(item.getActualSleepStartTime())
                 .build();
     }
 }

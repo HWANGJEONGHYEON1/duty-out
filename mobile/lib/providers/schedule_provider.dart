@@ -208,6 +208,30 @@ class ScheduleProvider with ChangeNotifier {
     return next.time.difference(DateTime.now()).inMinutes;
   }
 
+  /// 스케줄 아이템 업데이트 (수유량, 수면 시간 기록)
+  ///
+  /// [itemId] 아이템 ID
+  /// [feedingAmount] 수유량 (ml)
+  /// [actualSleepDuration] 실제 수면 시간 (분)
+  Future<void> updateScheduleItem({
+    required int itemId,
+    int? feedingAmount,
+    int? actualSleepDuration,
+  }) async {
+    try {
+      await _scheduleApiService.updateScheduleItem(
+        itemId: itemId,
+        feedingAmount: feedingAmount,
+        actualSleepDuration: actualSleepDuration,
+      );
+      notifyListeners();
+    } catch (e) {
+      _error = '스케줄 업데이트 실패: $e';
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   /// 에러 초기화
   void clearError() {
     _error = null;

@@ -66,4 +66,30 @@ class ScheduleApiService {
 
     throw Exception('스케줄 조정 실패: ${response.statusCode}');
   }
+
+  /// 스케줄 아이템 업데이트 (수유량, 수면 시간 기록)
+  ///
+  /// [itemId] 아이템 ID
+  /// [feedingAmount] 수유량 (ml)
+  /// [actualSleepDuration] 실제 수면 시간 (분)
+  Future<Map<String, dynamic>> updateScheduleItem({
+    required int itemId,
+    int? feedingAmount,
+    int? actualSleepDuration,
+  }) async {
+    final response = await _apiClient.put(
+      '/api/v1/babies/1/schedules/items/$itemId',
+      data: {
+        if (feedingAmount != null) 'feedingAmount': feedingAmount,
+        if (actualSleepDuration != null)
+          'actualSleepDuration': actualSleepDuration,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return response.data['data'];
+    }
+
+    throw Exception('스케줄 업데이트 실패: ${response.statusCode}');
+  }
 }
