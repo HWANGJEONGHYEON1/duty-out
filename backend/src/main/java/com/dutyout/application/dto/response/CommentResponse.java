@@ -36,7 +36,7 @@ public class CommentResponse {
                 .content(comment.getContent())
                 .anonymousAuthor(comment.getAnonymousAuthor())
                 .createdAt(comment.getCreatedAt())
-                .updatedAt(comment.getUpdatedAt())
+                .updatedAt(comment.getModifiedAt())
                 .build();
     }
 }

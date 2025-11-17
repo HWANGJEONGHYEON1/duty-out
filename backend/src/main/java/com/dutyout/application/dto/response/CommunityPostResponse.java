@@ -40,7 +40,7 @@ public class CommunityPostResponse {
                 .likeCount(post.getLikeCount())
                 .commentCount(post.getCommentCount())
                 .createdAt(post.getCreatedAt())
-                .updatedAt(post.getUpdatedAt())
+                .updatedAt(post.getModifiedAt())
                 .build();
     }
 }
