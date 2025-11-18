@@ -104,6 +104,17 @@ public class FeedingRecordService {
     }
 
     /**
+     * 특정 날짜의 총 수유량 조회
+     */
+    public Integer getTotalFeedingAmountByDate(Long babyId, LocalDate date) {
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = date.atTime(LocalTime.MAX);
+
+        Integer total = feedingRecordRepository.getTotalAmountToday(babyId, startOfDay, endOfDay);
+        return total != null ? total : 0;
+    }
+
+    /**
      * 수유 기록 수정
      */
     @Transactional
