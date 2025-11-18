@@ -852,6 +852,8 @@ class _EditScheduleItemDialog extends StatefulWidget {
 
 class _EditScheduleItemDialogState extends State<_EditScheduleItemDialog> {
   late TimeOfDay _selectedTime;
+  late TextEditingController _feedingAmountController;
+  late TextEditingController _sleepDurationController;
   bool _isLoading = false;
 
   @override
@@ -866,42 +868,100 @@ class _EditScheduleItemDialogState extends State<_EditScheduleItemDialog> {
     } else {
       _selectedTime = TimeOfDay.now();
     }
+
+    // 수유량/수면시간 초기화
+    _feedingAmountController = TextEditingController(
+      text: widget.item.feedingAmount?.toString() ?? '',
+    );
+    _sleepDurationController = TextEditingController(
+      text: widget.item.actualSleepDuration?.toString() ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _feedingAmountController.dispose();
+    _sleepDurationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('${widget.item.activity} 시간 수정'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('새로운 시간을 선택해주세요'),
-          const SizedBox(height: 20),
-          GestureDetector(
-            onTap: _isLoading ? null : () => _selectTime(context),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                border: Border.all(color: const Color(0xFF667EEA)),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF667EEA),
+      title: Text('${widget.item.activity} 수정'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 시간 선택
+            const Text('새로운 시간을 선택해주세요', style: TextStyle(fontSize: 14)),
+            const SizedBox(height: 16),
+            GestureDetector(
+              onTap: _isLoading ? null : () => _selectTime(context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFF667EEA)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF667EEA),
+                      ),
                     ),
-                  ),
-                  const Icon(Icons.access_time, color: Color(0xFF667EEA)),
-                ],
+                    const Icon(Icons.access_time, color: Color(0xFF667EEA)),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+
+            // 수유 항목인 경우 수유량 입력
+            if (widget.item.type == 'feed') ...[
+              const SizedBox(height: 20),
+              const Text('수유량을 입력해주세요', style: TextStyle(fontSize: 14)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _feedingAmountController,
+                decoration: InputDecoration(
+                  labelText: '수유량',
+                  hintText: '수유한 양을 ml 단위로 입력',
+                  suffixText: 'ml',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: const Icon(Icons.restaurant),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+
+            // 수면 항목인 경우 수면 시간 입력
+            if (widget.item.type == 'sleep') ...[
+              const SizedBox(height: 20),
+              const Text('실제 수면 시간을 입력해주세요', style: TextStyle(fontSize: 14)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _sleepDurationController,
+                decoration: InputDecoration(
+                  labelText: '수면 시간',
+                  hintText: '실제로 잔 시간을 분 단위로 입력',
+                  suffixText: '분',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: const Icon(Icons.nights_stay),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -951,11 +1011,6 @@ class _EditScheduleItemDialogState extends State<_EditScheduleItemDialog> {
     try {
       final scheduleProvider =
           widget.parentContext.read<ScheduleProvider>();
-      final baby = widget.parentContext.read<BabyProvider>().baby;
-
-      if (baby == null) {
-        throw Exception('아기 정보를 찾을 수 없습니다');
-      }
 
       // 새로운 시간
       final newTime = DateTime(
@@ -966,12 +1021,48 @@ class _EditScheduleItemDialogState extends State<_EditScheduleItemDialog> {
         _selectedTime.minute,
       );
 
-      // 스케줄 항목 수정 (scheduleItemId 필요)
-      await scheduleProvider.adjustScheduleItem(
-        babyId: baby.id,
-        scheduleItemId: widget.item.id,
-        actualStartTime: newTime,
-      );
+      final timeString =
+          '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}';
+
+      // itemId를 int로 변환
+      final itemIdInt = (widget.item.id is String)
+          ? int.tryParse(widget.item.id) ?? 0
+          : widget.item.id;
+
+      // 수유 항목: 시간과 수유량 저장
+      if (widget.item.type == 'feed') {
+        final feedingAmount = int.tryParse(_feedingAmountController.text);
+
+        await scheduleProvider.updateScheduleItem(
+          itemId: itemIdInt,
+          scheduledTime: timeString,
+          feedingAmount: feedingAmount,
+        );
+      }
+      // 수면 항목: 시간과 수면 시간 저장
+      else if (widget.item.type == 'sleep') {
+        final sleepDuration = int.tryParse(_sleepDurationController.text);
+
+        await scheduleProvider.updateScheduleItem(
+          itemId: itemIdInt,
+          scheduledTime: timeString,
+          actualSleepDuration: sleepDuration,
+        );
+      }
+      // 기타 항목: 시간만 저장
+      else {
+        final baby = widget.parentContext.read<BabyProvider>().baby;
+
+        if (baby == null) {
+          throw Exception('아기 정보를 찾을 수 없습니다');
+        }
+
+        await scheduleProvider.adjustScheduleItem(
+          babyId: baby.id,
+          scheduleItemId: widget.item.id,
+          actualStartTime: newTime,
+        );
+      }
 
       if (mounted) {
         Navigator.pop(context);
