@@ -233,17 +233,71 @@ class ScheduleProvider with ChangeNotifier {
     int? actualSleepDuration,
   }) async {
     try {
-      await _scheduleApiService.updateScheduleItem(
+      final response = await _scheduleApiService.updateScheduleItem(
         itemId: itemId,
         scheduledTime: scheduledTime,
         feedingAmount: feedingAmount,
         actualSleepDuration: actualSleepDuration,
       );
+
+      // 응답에서 업데이트된 항목 정보를 받아서 처리
+      if (response['item'] != null) {
+        // 단일 항목 응답
+        final updatedItem = response['item'];
+        _updateScheduleItemInList(updatedItem);
+      } else if (response['items'] != null) {
+        // 전체 리스트 응답
+        _scheduleItems = _parseScheduleItems(response['items']);
+      }
+
       notifyListeners();
     } catch (e) {
       _error = '스케줄 업데이트 실패: $e';
       notifyListeners();
       rethrow;
+    }
+  }
+
+  /// 스케줄 리스트에서 특정 항목을 업데이트합니다
+  void _updateScheduleItemInList(dynamic itemData) {
+    final itemId = itemData['id']?.toString();
+    final index = _scheduleItems.indexWhere((item) => item.id == itemId);
+
+    if (index != -1) {
+      final scheduleItem = _scheduleItems[index];
+
+      // 시간 업데이트
+      if (itemData['scheduledTime'] != null) {
+        final timeStr = itemData['scheduledTime'] as String;
+        final timeParts = timeStr.split(':');
+        final hour = int.parse(timeParts[0]);
+        final minute = int.parse(timeParts[1]);
+        final today = DateTime.now();
+        final baseDate = DateTime(today.year, today.month, today.day);
+        final newTime = baseDate.add(Duration(hours: hour, minutes: minute));
+
+        // 새로운 시간으로 업데이트 (동일 ScheduleItem 객체 수정)
+        _scheduleItems[index] = ScheduleItem(
+          id: scheduleItem.id,
+          time: newTime,
+          activity: scheduleItem.activity,
+          type: scheduleItem.type,
+          durationMinutes: scheduleItem.durationMinutes,
+          feedingAmount: itemData['feedingAmount'] as int? ??
+              scheduleItem.feedingAmount,
+          actualSleepDuration: itemData['actualSleepDuration'] as int? ??
+              scheduleItem.actualSleepDuration,
+        );
+      } else {
+        // 시간은 변경 없고 다른 필드만 업데이트
+        if (itemData['feedingAmount'] != null) {
+          scheduleItem.feedingAmount = itemData['feedingAmount'] as int;
+        }
+        if (itemData['actualSleepDuration'] != null) {
+          scheduleItem.actualSleepDuration =
+              itemData['actualSleepDuration'] as int;
+        }
+      }
     }
   }
 
