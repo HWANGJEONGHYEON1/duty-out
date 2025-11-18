@@ -105,13 +105,25 @@ class ScheduleProvider with ChangeNotifier {
           type = 'wake';
       }
 
-      return ScheduleItem(
+      final scheduleItem = ScheduleItem(
         id: item['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString(),
         time: time,
         activity: item['activityName'] ?? item['note'] ?? '',
         type: type,
         durationMinutes: item['durationMinutes'],
       );
+
+      // 수유량 설정 (feedingAmount)
+      if (item['feedingAmount'] != null) {
+        scheduleItem.feedingAmount = item['feedingAmount'] as int;
+      }
+
+      // 실제 수면 시간 설정 (actualSleepDuration)
+      if (item['actualSleepDuration'] != null) {
+        scheduleItem.actualSleepDuration = item['actualSleepDuration'] as int;
+      }
+
+      return scheduleItem;
     }).toList();
   }
 

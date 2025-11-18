@@ -40,4 +40,20 @@ class ScheduleItem {
     }
     return '$minutes분';
   }
+
+  String get subtitleString {
+    // 수유 항목: 수유량 표시
+    if (type == 'feed' && feedingAmount != null) {
+      return '${feedingAmount}ml';
+    }
+    // 수면 항목: 예정된 수면 시간 표시
+    if (type == 'sleep' && durationMinutes != null) {
+      return durationString;
+    }
+    // 기타 항목: 예정된 시간 표시
+    if (durationMinutes != null) {
+      return durationString;
+    }
+    return '';
+  }
 }
