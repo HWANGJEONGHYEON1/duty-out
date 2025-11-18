@@ -240,14 +240,10 @@ class ScheduleProvider with ChangeNotifier {
         actualSleepDuration: actualSleepDuration,
       );
 
-      // 응답에서 업데이트된 항목 정보를 받아서 처리
-      if (response['item'] != null) {
-        // 단일 항목 응답
-        final updatedItem = response['item'];
-        _updateScheduleItemInList(updatedItem);
-      } else if (response['items'] != null) {
-        // 전체 리스트 응답
-        _scheduleItems = _parseScheduleItems(response['items']);
+      // 응답은 ScheduleItemResponse 객체 (Map<String, dynamic>)
+      // id, scheduledTime, feedingAmount 등이 최상위 레벨에 있음
+      if (response['id'] != null) {
+        _updateScheduleItemInList(response);
       }
 
       notifyListeners();
