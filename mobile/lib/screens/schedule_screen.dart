@@ -631,11 +631,13 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 시간
+                    // 시간과 기록 정보 (수유는 수유량 함께 표시)
                     Text(
-                      item.durationMinutes != null
-                          ? '${item.timeString} - ${_getEndTime(item)}'
-                          : item.timeString,
+                      item.type == 'feed' && item.feedingAmount != null
+                          ? '${item.timeString} - ${item.activity} (${item.feedingAmount}ml)'
+                          : (item.durationMinutes != null
+                              ? '${item.timeString} - ${_getEndTime(item)}'
+                              : item.timeString),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -644,18 +646,20 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                     ),
                     const SizedBox(height: 3),
 
-                    // 활동명
-                    Text(
-                      item.activity,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                        fontWeight: FontWeight.w500,
+                    // 활동명 (수유가 아닐 때만 표시)
+                    if (item.type != 'feed') ...[
+                      Text(
+                        item.activity,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
+                    ],
 
-                    // 기록 정보 (수유량 또는 수면 시간)
-                    if (recordInfo != null) ...[
+                    // 기록 정보 (수면 시간 또는 남은 시간)
+                    if (recordInfo != null && item.type != 'feed') ...[
                       const SizedBox(height: 6),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -843,8 +847,16 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
 
   Future<void> _saveScheduleItem(dynamic item) async {
     try {
+      String? newTime;
       int? feedingAmount;
       int? sleepDuration;
+
+      // 시간 변경 확인
+      if (_editTimeController.text.isNotEmpty &&
+          _editTimeController.text != item.timeString) {
+        newTime = _editTimeController.text;
+        item.timeString = newTime;
+      }
 
       // 수유량 저장
       if (item.type == 'feed' && _feedingAmountController.text.isNotEmpty) {
@@ -863,6 +875,7 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
           Provider.of<ScheduleProvider>(context, listen: false);
       await scheduleProvider.updateScheduleItem(
         itemId: item.id,
+        scheduledTime: newTime,
         feedingAmount: feedingAmount,
         actualSleepDuration: sleepDuration,
       );

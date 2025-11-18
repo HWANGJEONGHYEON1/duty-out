@@ -208,19 +208,22 @@ class ScheduleProvider with ChangeNotifier {
     return next.time.difference(DateTime.now()).inMinutes;
   }
 
-  /// 스케줄 아이템 업데이트 (수유량, 수면 시간 기록)
+  /// 스케줄 아이템 업데이트 (시간, 수유량, 수면 시간 기록)
   ///
   /// [itemId] 아이템 ID
+  /// [scheduledTime] 스케줄 시간 (HH:mm 형식)
   /// [feedingAmount] 수유량 (ml)
   /// [actualSleepDuration] 실제 수면 시간 (분)
   Future<void> updateScheduleItem({
     required int itemId,
+    String? scheduledTime,
     int? feedingAmount,
     int? actualSleepDuration,
   }) async {
     try {
       await _scheduleApiService.updateScheduleItem(
         itemId: itemId,
+        scheduledTime: scheduledTime,
         feedingAmount: feedingAmount,
         actualSleepDuration: actualSleepDuration,
       );
