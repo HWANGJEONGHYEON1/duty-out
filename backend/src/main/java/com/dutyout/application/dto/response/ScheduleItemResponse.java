@@ -14,6 +14,7 @@ public class ScheduleItemResponse {
 
     private Long id;
     private ActivityType activityType;
+    private String activityName;
     private LocalTime scheduledTime;
     private Integer durationMinutes;
     private String note;
@@ -26,6 +27,7 @@ public class ScheduleItemResponse {
         return ScheduleItemResponse.builder()
                 .id(item.getId())
                 .activityType(item.getActivityType())
+                .activityName(item.getActivityType().getKoreanName())
                 .scheduledTime(item.getScheduledTime())
                 .durationMinutes(item.getDurationMinutes())
                 .note(item.getNote())
