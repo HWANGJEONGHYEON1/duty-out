@@ -333,26 +333,30 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
   Widget _buildTodaySummaryCard(BuildContext context) {
     final now = DateTime.now();
     final dateFormat = DateFormat('M월 d일 EEEE', 'ko_KR');
-    final statistics = context.watch<StatisticsProvider>();
+    final scheduleProvider = context.watch<ScheduleProvider>();
 
-    // 오늘의 통계 계산
+    // 오늘의 통계 계산 (스케줄 아이템에서)
     final today = DateTime.now();
     final todayStart = DateTime(today.year, today.month, today.day);
     final todayEnd = todayStart.add(const Duration(days: 1));
 
-    // 오늘의 총 수면 시간
-    final todaySleep = statistics.sleepRecords
-        .where((record) =>
-            record.startTime.isAfter(todayStart) &&
-            record.startTime.isBefore(todayEnd))
-        .fold<int>(0, (sum, record) => sum + record.durationMinutes);
+    // 오늘의 총 수면 시간 (sleep 타입 아이템의 actualSleepDuration 합계)
+    final todaySleep = scheduleProvider.scheduleItems
+        .where((item) =>
+            item.type == 'sleep' &&
+            item.time.isAfter(todayStart) &&
+            item.time.isBefore(todayEnd) &&
+            item.actualSleepDuration != null)
+        .fold<int>(0, (sum, item) => sum + (item.actualSleepDuration ?? 0));
 
-    // 오늘의 총 수유량
-    final todayFeeding = statistics.feedingRecords
-        .where((record) =>
-            record.time.isAfter(todayStart) &&
-            record.time.isBefore(todayEnd))
-        .fold<int>(0, (sum, record) => sum + record.amount);
+    // 오늘의 총 수유량 (feed 타입 아이템의 feedingAmount 합계)
+    final todayFeeding = scheduleProvider.scheduleItems
+        .where((item) =>
+            item.type == 'feed' &&
+            item.time.isAfter(todayStart) &&
+            item.time.isBefore(todayEnd) &&
+            item.feedingAmount != null)
+        .fold<int>(0, (sum, item) => sum + (item.feedingAmount ?? 0));
 
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 20, 20, 0),
@@ -665,9 +669,9 @@ class _NewHomeScreenState extends State<NewHomeScreen> {
             fontSize: 16,
           ),
         ),
-        subtitle: item.durationMinutes != null
+        subtitle: item.subtitleString.isNotEmpty
             ? Text(
-                item.durationString,
+                item.subtitleString,
                 style: const TextStyle(fontSize: 12),
               )
             : null,
