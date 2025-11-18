@@ -742,6 +742,107 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
     _sleepDurationController.text = item.actualSleepDuration?.toString() ?? '';
     _editingItemId = item.id;
 
+    // 수유 항목인 경우 별도의 간결한 다이얼로그 표시
+    if (item.type == 'feed') {
+      _showFeedingEditDialog(item);
+    } else {
+      _showDefaultScheduleEditDialog(item);
+    }
+  }
+
+  void _showFeedingEditDialog(dynamic item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('수유 기록'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 수유 시간
+              TextField(
+                controller: _editTimeController,
+                decoration: InputDecoration(
+                  labelText: '수유 시간',
+                  hintText: '시간을 선택하세요',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: const Icon(Icons.access_time),
+                  filled: true,
+                  fillColor: const Color(0xFFFFF3E0).withOpacity(0.5),
+                ),
+                readOnly: true,
+                onTap: () async {
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(item.time),
+                  );
+                  if (time != null) {
+                    _editTimeController.text = time.format(context);
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+
+              // 수유량
+              TextField(
+                controller: _feedingAmountController,
+                decoration: InputDecoration(
+                  labelText: '수유량',
+                  hintText: '수유한 양을 ml 단위로 입력',
+                  suffixText: 'ml',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  prefixIcon: const Icon(Icons.restaurant),
+                  filled: true,
+                  fillColor: const Color(0xFFFFF3E0).withOpacity(0.5),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '예시: 120ml (실제 수유한 양)',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _editingItemId = null;
+            },
+            child: const Text('취소'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _saveFeedingRecord(item);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF9800),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text(
+              '저장',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDefaultScheduleEditDialog(dynamic item) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -777,27 +878,6 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
                 maxLines: 2,
               ),
               const SizedBox(height: 16),
-
-              // 수유 타입인 경우 수유량 입력
-              if (item.type == 'feed') ...[
-                TextField(
-                  controller: _feedingAmountController,
-                  decoration: const InputDecoration(
-                    labelText: '수유량 (ml)',
-                    border: OutlineInputBorder(),
-                    suffixText: 'ml',
-                  ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '실제 수유한 양을 입력해주세요',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
 
               // 수면 타입인 경우 수면 시간 입력
               if (item.type == 'sleep') ...[
@@ -843,6 +923,60 @@ class _ScheduleScreenState extends State<ScheduleScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _saveFeedingRecord(dynamic item) async {
+    try {
+      String? newTime;
+      int? feedingAmount;
+
+      // 시간 변경 확인
+      if (_editTimeController.text.isNotEmpty &&
+          _editTimeController.text != item.timeString) {
+        newTime = _editTimeController.text;
+        item.timeString = newTime;
+      }
+
+      // 수유량 저장
+      if (_feedingAmountController.text.isNotEmpty) {
+        feedingAmount = int.tryParse(_feedingAmountController.text);
+        if (feedingAmount != null) {
+          item.feedingAmount = feedingAmount;
+        }
+      }
+
+      // API 호출하여 서버에 저장
+      final scheduleProvider =
+          Provider.of<ScheduleProvider>(context, listen: false);
+      await scheduleProvider.updateScheduleItem(
+        itemId: item.id,
+        scheduledTime: newTime,
+        feedingAmount: feedingAmount,
+      );
+
+      setState(() {
+        // UI 업데이트
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('수유 기록이 저장되었습니다! 🍼'),
+            duration: Duration(seconds: 2),
+            backgroundColor: Color(0xFFFF9800),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('저장 실패: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _saveScheduleItem(dynamic item) async {
