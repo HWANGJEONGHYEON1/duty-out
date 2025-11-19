@@ -103,13 +103,17 @@ public class StandardScheduleService {
 
         // 3개월 표준 스케줄
         schedules.put(3, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 1"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 20, "수유 1"),
                 item(8, 30, ActivityType.NAP1, 60, "낮잠 1 (1시간)"),
-                item(9, 30, ActivityType.WAKE_UP, 0, "기상 + 수유 2"),
+                item(9, 30, ActivityType.WAKE_UP, 0, "기상"),
+                item(10, 0, ActivityType.FEEDING, 20, "수유 2"),
                 item(11, 10, ActivityType.NAP2, 90, "낮잠 2 (1시간 30분)"),
-                item(12, 40, ActivityType.WAKE_UP, 0, "기상 + 수유 3"),
+                item(12, 40, ActivityType.WAKE_UP, 0, "기상"),
+                item(13, 10, ActivityType.FEEDING, 20, "수유 3"),
                 item(14, 25, ActivityType.NAP3, 45, "낮잠 3 (45분)"),
-                item(15, 10, ActivityType.WAKE_UP, 0, "기상 + 수유 4"),
+                item(15, 10, ActivityType.WAKE_UP, 0, "기상"),
+                item(15, 40, ActivityType.FEEDING, 20, "수유 4"),
                 item(17, 0, ActivityType.NAP4, 30, "낮잠 4 (30분)"),
                 item(17, 30, ActivityType.WAKE_UP, 0, "기상"),
                 item(19, 10, ActivityType.FEEDING, 20, "수유 5 (마지막)"),
@@ -118,12 +122,14 @@ public class StandardScheduleService {
 
         // 4개월 표준 스케줄
         schedules.put(4, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 1"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 20, "수유 1"),
                 item(8, 50, ActivityType.NAP1, 70, "낮잠 1 (1시간 10분)"),
                 item(10, 0, ActivityType.WAKE_UP, 0, "기상"),
                 item(10, 45, ActivityType.FEEDING, 20, "수유 2"),
                 item(12, 15, ActivityType.NAP2, 105, "낮잠 2 (1시간 45분)"),
-                item(14, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 3"),
+                item(14, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(14, 30, ActivityType.FEEDING, 20, "수유 3"),
                 item(16, 15, ActivityType.NAP3, 45, "낮잠 3 (45분)"),
                 item(17, 0, ActivityType.WAKE_UP, 0, "기상"),
                 item(18, 15, ActivityType.FEEDING, 20, "수유 4 (마지막)"),
@@ -132,11 +138,14 @@ public class StandardScheduleService {
 
         // 5개월 표준 스케줄
         schedules.put(5, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 1"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 20, "수유 1"),
                 item(9, 0, ActivityType.NAP1, 90, "낮잠 1 (1시간 30분)"),
-                item(10, 30, ActivityType.WAKE_UP, 0, "기상 + 수유 2"),
+                item(10, 30, ActivityType.WAKE_UP, 0, "기상"),
+                item(11, 0, ActivityType.FEEDING, 20, "수유 2"),
                 item(12, 45, ActivityType.NAP2, 90, "낮잠 2 (1시간 30분)"),
-                item(14, 15, ActivityType.WAKE_UP, 0, "기상 + 수유 3"),
+                item(14, 15, ActivityType.WAKE_UP, 0, "기상"),
+                item(14, 45, ActivityType.FEEDING, 20, "수유 3"),
                 item(16, 30, ActivityType.NAP3, 60, "낮잠 3 (1시간)"),
                 item(17, 30, ActivityType.WAKE_UP, 0, "기상"),
                 item(18, 30, ActivityType.FEEDING, 20, "수유 4 (마지막)"),
@@ -145,9 +154,11 @@ public class StandardScheduleService {
 
         // 6개월 표준 스케줄 (이유식 시작)
         schedules.put(6, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 1"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 20, "수유 1"),
                 item(9, 0, ActivityType.NAP1, 105, "낮잠 1 (1시간 45분)"),
-                item(10, 45, ActivityType.WAKE_UP, 0, "기상 + 이유식 + 수유 2"),
+                item(10, 45, ActivityType.WAKE_UP, 0, "기상"),
+                item(11, 0, ActivityType.FEEDING, 30, "이유식 + 수유 2"),
                 item(13, 0, ActivityType.NAP2, 75, "낮잠 2 (1시간 15분)"),
                 item(14, 15, ActivityType.WAKE_UP, 0, "기상"),
                 item(15, 0, ActivityType.FEEDING, 20, "수유 3 (보충)"),
@@ -159,12 +170,14 @@ public class StandardScheduleService {
 
         // 7~8개월 표준 스케줄 (낮잠 2회)
         schedules.put(7, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 수유 1"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 20, "수유 1"),
                 item(9, 45, ActivityType.NAP1, 90, "낮잠 1 (1시간 30분)"),
                 item(11, 15, ActivityType.WAKE_UP, 0, "기상"),
                 item(11, 30, ActivityType.FEEDING, 30, "이유식 + 수유 2"),
                 item(14, 15, ActivityType.NAP2, 75, "낮잠 2 (1시간 15분)"),
-                item(15, 30, ActivityType.WAKE_UP, 0, "기상 + 이유식 + 수유 3"),
+                item(15, 30, ActivityType.WAKE_UP, 0, "기상"),
+                item(16, 0, ActivityType.FEEDING, 30, "이유식 + 수유 3"),
                 item(19, 0, ActivityType.FEEDING, 20, "수유 4 (마지막)"),
                 item(19, 30, ActivityType.BEDTIME, 660, "취침 (야간 수면 약 11-12시간)")
         ));
@@ -172,25 +185,30 @@ public class StandardScheduleService {
 
         // 11~12개월 표준 스케줄 (낮잠 2회)
         schedules.put(11, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 아침식사"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 30, "아침식사"),
                 item(9, 45, ActivityType.FEEDING, 15, "간식"),
                 item(10, 30, ActivityType.NAP1, 60, "낮잠 1 (1시간)"),
-                item(11, 30, ActivityType.WAKE_UP, 0, "기상 + 점심식사"),
+                item(11, 30, ActivityType.WAKE_UP, 0, "기상"),
+                item(11, 45, ActivityType.FEEDING, 30, "점심식사"),
                 item(14, 30, ActivityType.FEEDING, 15, "간식"),
                 item(15, 0, ActivityType.NAP2, 60, "낮잠 2 (1시간)"),
-                item(16, 0, ActivityType.WAKE_UP, 0, "기상 + 간식"),
-                item(18, 30, ActivityType.FEEDING, 30, "저녁식사 + 간식"),
+                item(16, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(16, 15, ActivityType.FEEDING, 15, "간식"),
+                item(18, 30, ActivityType.FEEDING, 30, "저녁식사"),
                 item(20, 0, ActivityType.BEDTIME, 660, "취침 (야간 수면 약 11시간)")
         ));
 
         // 12~24개월 표준 스케줄 (낮잠 1회)
         schedules.put(12, List.of(
-                item(7, 0, ActivityType.WAKE_UP, 0, "기상 + 아침식사"),
+                item(7, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(7, 15, ActivityType.FEEDING, 30, "아침식사"),
                 item(10, 0, ActivityType.FEEDING, 15, "간식"),
                 item(11, 30, ActivityType.FEEDING, 30, "점심식사"),
                 item(12, 30, ActivityType.NAP1, 90, "낮잠 (1시간 30분~2시간)"),
-                item(14, 0, ActivityType.WAKE_UP, 0, "기상 + 간식"),
-                item(18, 0, ActivityType.FEEDING, 30, "저녁식사 + 간식"),
+                item(14, 0, ActivityType.WAKE_UP, 0, "기상"),
+                item(14, 15, ActivityType.FEEDING, 15, "간식"),
+                item(18, 0, ActivityType.FEEDING, 30, "저녁식사"),
                 item(20, 0, ActivityType.BEDTIME, 660, "취침 (야간 수면 약 11시간)")
         ));
         schedules.put(18, schedules.get(12)); // 18개월도 유사
