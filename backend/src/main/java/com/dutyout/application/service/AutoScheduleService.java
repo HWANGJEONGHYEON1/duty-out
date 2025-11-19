@@ -85,8 +85,12 @@ public class AutoScheduleService {
         // 3. 기존 스케줄 확인 및 삭제 (오늘 날짜)
         // unique 제약 위반 방지를 위해 기존 스케줄을 먼저 삭제
         LocalDate today = LocalDate.now();
-        int deletedCount = dailyScheduleRepository.deleteByBabyIdAndScheduleDate(babyId, today);
-        log.info("기존 스케줄 삭제 완료 - 삭제 건수: {}", deletedCount);
+        dailyScheduleRepository.findByBabyIdAndScheduleDate(babyId, today)
+                .ifPresent(existingSchedule -> {
+                    dailyScheduleRepository.delete(existingSchedule);
+                    dailyScheduleRepository.flush(); // 즉시 DB에 반영
+                    log.info("기존 스케줄 삭제 완료 - Schedule ID: {}", existingSchedule.getId());
+                });
 
         // 4. 표준 스케줄 조회 및 기상 시간에 맞게 조정
         List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> standardItems =
@@ -375,31 +379,35 @@ public class AutoScheduleService {
                 standardScheduleService.getStandardSchedule(ageInMonths);
 
         // 8. 이후 모든 아이템의 시간 재계산
+        // 원래 스케줄의 간격을 유지하면서 시간만 shift
+        LocalTime previousEndTime = actualEndTime;
+
         for (int i = changedItemIndex + 1; i < dailySchedule.getScheduleItems().size(); i++) {
-            ScheduleItem item = dailySchedule.getScheduleItems().get(i);
+            ScheduleItem currentItem = dailySchedule.getScheduleItems().get(i);
+            ScheduleItem previousItemInList = dailySchedule.getScheduleItems().get(i - 1);
 
-            // 이전 활동과의 간격 계산 (표준 스케줄 기준)
-            int intervalMinutes = calculateIntervalFromStandard(standardItems, changedItemIndex, i);
+            // 원래 스케줄에서 이전 아이템 종료 시간과 현재 아이템 시작 시간의 간격 계산
+            LocalTime originalPreviousEnd = previousItemInList.getScheduledTime();
+            if (previousItemInList.getDurationMinutes() != null) {
+                originalPreviousEnd = originalPreviousEnd.plusMinutes(previousItemInList.getDurationMinutes());
+            }
 
-            // 간격을 적용하여 새 시간 계산
-            if (intervalMinutes > 0) {
-                // 표준 스케줄의 간격을 사용
-                LocalTime adjustedTime = currentTime.plusMinutes(intervalMinutes);
-                item.updateScheduledTime(adjustedTime);
+            long originalGap = java.time.temporal.ChronoUnit.MINUTES.between(
+                    originalPreviousEnd, currentItem.getScheduledTime());
 
-                // 다음 활동을 위해 현재 시간 업데이트
-                if (item.getDurationMinutes() != null) {
-                    currentTime = adjustedTime.plusMinutes(item.getDurationMinutes());
-                } else {
-                    currentTime = adjustedTime;
-                }
+            // 새로운 시간 = 실제 이전 종료 시간 + 원래 간격
+            LocalTime newTime = previousEndTime.plusMinutes(originalGap);
+            LocalTime oldTime = currentItem.getScheduledTime();
+            currentItem.updateScheduledTime(newTime);
 
-                log.debug("조정된 아이템 {}: {} (간격: {}분)",
-                        item.getActivityType(), adjustedTime, intervalMinutes);
+            log.info("아이템 {}: {} → {} (간격 유지: {}분)",
+                    currentItem.getActivityType(), oldTime, newTime, originalGap);
+
+            // 다음 반복을 위한 종료 시간 계산
+            if (currentItem.getDurationMinutes() != null) {
+                previousEndTime = newTime.plusMinutes(currentItem.getDurationMinutes());
             } else {
-                // 간격 정보가 없으면 기존 로직 사용 (단순 shift)
-                // 이는 표준 스케줄에 없는 커스텀 아이템의 경우
-                log.debug("표준 간격 없음 - 기존 위치 유지: {}", item.getActivityType());
+                previousEndTime = newTime;
             }
         }
 
@@ -418,44 +426,6 @@ public class AutoScheduleService {
 
         // 11. Response 생성
         return buildAutoScheduleResponse(dailySchedule, guideline);
-    }
-
-    /**
-     * 표준 스케줄 기준으로 두 아이템 간의 간격 계산
-     *
-     * @param standardItems 표준 스케줄 아이템
-     * @param fromIndex 시작 인덱스
-     * @param toIndex 종료 인덱스
-     * @return 간격 (분)
-     */
-    private int calculateIntervalFromStandard(
-            List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> standardItems,
-            int fromIndex,
-            int toIndex) {
-
-        try {
-            if (fromIndex >= 0 && toIndex < standardItems.size()) {
-                // 표준 스케줄에서 해당 인덱스의 아이템 찾기
-                com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem fromItem =
-                        standardItems.get(fromIndex);
-                com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem toItem =
-                        standardItems.get(toIndex);
-
-                // 종료 시간 계산 (fromItem)
-                LocalTime fromEnd = fromItem.getTime();
-                if (fromItem.getDurationMinutes() != null && fromItem.getDurationMinutes() > 0) {
-                    fromEnd = fromEnd.plusMinutes(fromItem.getDurationMinutes());
-                }
-
-                // 간격 계산
-                long interval = java.time.temporal.ChronoUnit.MINUTES.between(fromEnd, toItem.getTime());
-                return (int) interval;
-            }
-        } catch (Exception e) {
-            log.warn("표준 스케줄 간격 계산 실패: {}", e.getMessage());
-        }
-
-        return 0; // 간격 정보 없음
     }
 
     /**
