@@ -28,7 +28,7 @@ public class SleepRecordResponse {
                 .type(record.getType())
                 .startTime(record.getStartTime())
                 .endTime(record.getEndTime())
-                .durationMinutes(record.calculateDurationInMinutes())
+                .durationMinutes((int) record.calculateDurationInMinutes())  // long to int 형변환
                 .quality(record.getQuality())
                 .wakeCount(record.getWakeCount())
                 .memo(record.getMemo())
