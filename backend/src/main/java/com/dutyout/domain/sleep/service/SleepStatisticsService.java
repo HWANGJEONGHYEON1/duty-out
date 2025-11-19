@@ -69,8 +69,8 @@ public class SleepStatisticsService {
         int totalSleepMinutes = 0;
 
         for (SleepRecord record : sleepRecords) {
-            if (record.isCompleted()) {
-                int durationMinutes = record.calculateDurationInMinutes();
+            if (!record.isOngoing()) {  // 종료된 수면 기록만 계산
+                int durationMinutes = (int) record.calculateDurationInMinutes();  // long to int 형변환
                 LocalDate recordDate = record.getStartTime().toLocalDate();
                 sleepByDate.merge(recordDate, durationMinutes, Integer::sum);
                 totalSleepMinutes += durationMinutes;
