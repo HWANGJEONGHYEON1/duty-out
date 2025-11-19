@@ -46,10 +46,23 @@ class ScheduleItem {
     if (type == 'feed' && feedingAmount != null) {
       return '${feedingAmount}ml';
     }
-    // 수면 항목: 예정된 수면 시간 표시
-    if (type == 'sleep' && durationMinutes != null) {
-      return durationString;
+
+    // 수면 항목: 실제 수면 시간 우선 표시
+    if (type == 'sleep') {
+      if (actualSleepDuration != null) {
+        // 사용자가 입력한 실제 수면 시간 표시
+        final hours = actualSleepDuration! ~/ 60;
+        final minutes = actualSleepDuration! % 60;
+        if (hours > 0) {
+          return '실제: $hours시간 $minutes분';
+        }
+        return '실제: $minutes분';
+      } else if (durationMinutes != null) {
+        // 예정된 수면 시간 표시
+        return '예정: $durationString';
+      }
     }
+
     // 기타 항목: 예정된 시간 표시
     if (durationMinutes != null) {
       return durationString;
