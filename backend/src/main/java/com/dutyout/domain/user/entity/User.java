@@ -41,7 +41,8 @@ public class User extends BaseTimeEntity {
     private UserRole role = UserRole.USER;
 
     @Builder
-    private User(String email, String name, AuthProvider provider, String providerId, String profileImage) {
+    private User(Long id, String email, String name, AuthProvider provider, String providerId, String profileImage) {
+        this.id = id;
         this.email = email;
         this.name = name;
         this.provider = provider;

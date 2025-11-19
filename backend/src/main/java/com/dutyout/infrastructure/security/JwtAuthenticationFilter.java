@@ -117,11 +117,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 .orElseGet(() -> {
                     // 테스트용 사용자가 없으면 임시로 생성
                     log.warn("테스트용 사용자(ID: 1)를 찾을 수 없습니다. 더미 사용자로 진행합니다.");
-                    User dummyUser = new User();
-                    dummyUser.setId(1L);
-                    dummyUser.setEmail("test@example.com");
-                    dummyUser.setName("Test User");
-                    return dummyUser;
+                    return User.builder()
+                            .id(1L)
+                            .email("test@test.com")
+                            .name("Test User")
+                            .build();
                 });
 
         setUserAuthentication(testUser, request);
