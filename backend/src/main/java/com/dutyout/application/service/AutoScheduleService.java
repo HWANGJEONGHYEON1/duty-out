@@ -53,9 +53,10 @@ public class AutoScheduleService {
     private final BabyRepository babyRepository;
     private final AgeBasedSleepGuidelineRepository guidelineRepository;
     private final DailyScheduleRepository dailyScheduleRepository;
+    private final com.dutyout.domain.schedule.service.StandardScheduleService standardScheduleService;
 
     /**
-     * 자동 스케줄 생성
+     * 자동 스케줄 생성 (표준 스케줄 기반)
      *
      * @param babyId 아기 ID
      * @param request 생성 요청 (기상 시간 포함)
@@ -87,10 +88,24 @@ public class AutoScheduleService {
         int deletedCount = dailyScheduleRepository.deleteByBabyIdAndScheduleDate(babyId, today);
         log.info("기존 스케줄 삭제 완료 - 삭제 건수: {}", deletedCount);
 
-        // 4. 스케줄 아이템 생성
-        List<ScheduleItem> scheduleItems = buildScheduleItems(guideline, request, baby);
+        // 4. 표준 스케줄 조회 및 기상 시간에 맞게 조정
+        List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> standardItems =
+                standardScheduleService.getStandardSchedule(ageInMonths);
+        List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> adjustedItems =
+                standardScheduleService.adjustScheduleToWakeTime(standardItems, request.getWakeUpTime());
 
-        // 5. DailySchedule 생성 및 저장
+        // 5. 스케줄 아이템 생성
+        List<ScheduleItem> scheduleItems = new ArrayList<>();
+        for (com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem item : adjustedItems) {
+            scheduleItems.add(ScheduleItem.builder()
+                    .activityType(item.getActivityType())
+                    .scheduledTime(item.getTime())
+                    .durationMinutes(item.getDurationMinutes())
+                    .note(item.getNote())
+                    .build());
+        }
+
+        // 6. DailySchedule 생성 및 저장
         DailySchedule dailySchedule = DailySchedule.builder()
                 .babyId(babyId)
                 .scheduleDate(today)
@@ -104,7 +119,7 @@ public class AutoScheduleService {
         log.info("자동 스케줄 생성 완료 - Schedule ID: {}, 총 {}개 아이템",
                 dailySchedule.getId(), scheduleItems.size());
 
-        // 6. Response 생성
+        // 7. Response 생성
         return buildAutoScheduleResponse(dailySchedule, guideline);
     }
 
@@ -265,9 +280,10 @@ public class AutoScheduleService {
     }
 
     /**
-     * 스케줄 동적 조정
+     * 스케줄 동적 조정 (실제 수면 시간 기준)
      *
-     * 실제 낮잠 시간이 변경되면 이후 스케줄을 자동으로 재계산합니다.
+     * 사용자가 실제 수면 시간을 입력하면, 해당 시간을 기준으로 다음 스케줄을 재계산합니다.
+     * 예: 13:00에 낮잠 예정 → 실제로 40분만 잠 → 다음 스케줄은 13:40부터 시작
      *
      * @param babyId 아기 ID
      * @param request 조정 요청
@@ -303,59 +319,143 @@ public class AutoScheduleService {
             throw new BusinessException(ErrorCode.SCHEDULE_NOT_FOUND);
         }
 
-        // 4. 원래 시간과 새 시간의 차이 계산
-        LocalTime originalTime = changedItem.getScheduledTime();
-        LocalTime newTime;
+        // 4. 실제 수면 시간 처리
+        LocalTime actualEndTime;
 
-        if (request.getActualEndTime() != null && changedItem.getDurationMinutes() != null) {
-            // 종료 시간으로부터 실제 지속 시간을 고려하여 시작 시간 계산
-            newTime = request.getActualEndTime().minusMinutes(changedItem.getDurationMinutes());
-        } else if (request.getActualStartTime() != null) {
-            newTime = request.getActualStartTime();
-        } else if (request.getActualDurationMinutes() != null && changedItem.getDurationMinutes() != null) {
-            // 지속 시간만 제공된 경우
-            int timeDifference = request.getActualDurationMinutes() - changedItem.getDurationMinutes();
-            newTime = originalTime.plusMinutes(timeDifference);
+        if (request.getActualDurationMinutes() != null) {
+            // 실제 수면 시간(분)을 입력한 경우
+            // 예: 13:00에 시작, 40분 잠 → 13:40에 종료
+            log.info("실제 수면 시간: {}분 (예정: {}분)",
+                    request.getActualDurationMinutes(),
+                    changedItem.getDurationMinutes());
+
+            // 실제 수면 시간 업데이트
             changedItem.updateDuration(request.getActualDurationMinutes());
+
+            // 종료 시간 계산
+            actualEndTime = changedItem.getScheduledTime().plusMinutes(request.getActualDurationMinutes());
+
+        } else if (request.getActualEndTime() != null) {
+            // 종료 시간을 직접 입력한 경우
+            actualEndTime = request.getActualEndTime();
+
+            // 실제 수면 시간 계산
+            long actualDuration = java.time.temporal.ChronoUnit.MINUTES.between(
+                    changedItem.getScheduledTime(), actualEndTime);
+            changedItem.updateDuration((int) actualDuration);
+
+        } else if (request.getActualStartTime() != null) {
+            // 시작 시간을 변경한 경우
+            LocalTime originalStart = changedItem.getScheduledTime();
+            changedItem.updateScheduledTime(request.getActualStartTime());
+
+            // 종료 시간 계산 (기존 duration 사용)
+            if (changedItem.getDurationMinutes() != null) {
+                actualEndTime = request.getActualStartTime().plusMinutes(changedItem.getDurationMinutes());
+            } else {
+                actualEndTime = request.getActualStartTime();
+            }
+
         } else {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
 
-        long minuteDifference = java.time.temporal.ChronoUnit.MINUTES.between(originalTime, newTime);
+        log.info("활동 종료 시간: {}", actualEndTime);
 
-        log.info("시간 차이: {} 분, 원래: {}, 변경: {}", minuteDifference, originalTime, newTime);
+        // 5. 다음 활동부터 시간 재계산 (실제 종료 시간 기준)
+        LocalTime currentTime = actualEndTime;
 
-        // 5. 변경된 아이템의 시간 업데이트
-        changedItem.updateScheduledTime(newTime);
-
-        // 6. 이후 모든 아이템의 시간 조정
-        for (int i = changedItemIndex + 1; i < dailySchedule.getScheduleItems().size(); i++) {
-            ScheduleItem item = dailySchedule.getScheduleItems().get(i);
-            LocalTime adjustedTime = item.getScheduledTime().plusMinutes(minuteDifference);
-            item.updateScheduledTime(adjustedTime);
-            log.debug("조정된 아이템 {}: {} -> {}", item.getActivityType(), item.getScheduledTime(), adjustedTime);
-        }
-
-        // 7. 가이드라인 조회 (과피로 체크용)
+        // 6. 가이드라인 조회 (깨시 적용을 위해)
         int ageInMonths = baby.calculateAgeInMonths();
         AgeBasedSleepGuideline guideline = guidelineRepository.findClosestGuidelineByAge(ageInMonths)
                 .orElse(null);
 
-        // 8. 과피로 방지 경고 (선택사항 - 현재는 로그만 기록)
+        // 7. 표준 스케줄 조회 (깨시 정보 확인용)
+        List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> standardItems =
+                standardScheduleService.getStandardSchedule(ageInMonths);
+
+        // 8. 이후 모든 아이템의 시간 재계산
+        for (int i = changedItemIndex + 1; i < dailySchedule.getScheduleItems().size(); i++) {
+            ScheduleItem item = dailySchedule.getScheduleItems().get(i);
+
+            // 이전 활동과의 간격 계산 (표준 스케줄 기준)
+            int intervalMinutes = calculateIntervalFromStandard(standardItems, changedItemIndex, i);
+
+            // 간격을 적용하여 새 시간 계산
+            if (intervalMinutes > 0) {
+                // 표준 스케줄의 간격을 사용
+                LocalTime adjustedTime = currentTime.plusMinutes(intervalMinutes);
+                item.updateScheduledTime(adjustedTime);
+
+                // 다음 활동을 위해 현재 시간 업데이트
+                if (item.getDurationMinutes() != null) {
+                    currentTime = adjustedTime.plusMinutes(item.getDurationMinutes());
+                } else {
+                    currentTime = adjustedTime;
+                }
+
+                log.debug("조정된 아이템 {}: {} (간격: {}분)",
+                        item.getActivityType(), adjustedTime, intervalMinutes);
+            } else {
+                // 간격 정보가 없으면 기존 로직 사용 (단순 shift)
+                // 이는 표준 스케줄에 없는 커스텀 아이템의 경우
+                log.debug("표준 간격 없음 - 기존 위치 유지: {}", item.getActivityType());
+            }
+        }
+
+        // 9. 과피로 방지 경고
         if (guideline != null && changedItem.getDurationMinutes() != null) {
             int totalWakeTime = calculateTotalWakeTime(dailySchedule, guideline);
-            if (totalWakeTime > guideline.getWakeWindowMaxMinutes() * 16) {
+            if (totalWakeTime > guideline.getWakeWindowMaxMinutes() * guideline.getNapCount()) {
                 log.warn("경고: 아기의 깨시가 권장치를 초과했습니다. 총 깨시: {} 분", totalWakeTime);
             }
         }
 
-        // 9. 저장
+        // 10. 저장
         dailySchedule = dailyScheduleRepository.save(dailySchedule);
 
-        log.info("스케줄 동적 조정 완료 - 변경된 아이템 수: {}", changedItemIndex + 1);
+        log.info("스케줄 동적 조정 완료 - 조정된 아이템: {}", changedItem.getActivityType());
 
-        // 10. Response 생성
+        // 11. Response 생성
         return buildAutoScheduleResponse(dailySchedule, guideline);
+    }
+
+    /**
+     * 표준 스케줄 기준으로 두 아이템 간의 간격 계산
+     *
+     * @param standardItems 표준 스케줄 아이템
+     * @param fromIndex 시작 인덱스
+     * @param toIndex 종료 인덱스
+     * @return 간격 (분)
+     */
+    private int calculateIntervalFromStandard(
+            List<com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem> standardItems,
+            int fromIndex,
+            int toIndex) {
+
+        try {
+            if (fromIndex >= 0 && toIndex < standardItems.size()) {
+                // 표준 스케줄에서 해당 인덱스의 아이템 찾기
+                com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem fromItem =
+                        standardItems.get(fromIndex);
+                com.dutyout.domain.schedule.service.StandardScheduleService.StandardScheduleItem toItem =
+                        standardItems.get(toIndex);
+
+                // 종료 시간 계산 (fromItem)
+                LocalTime fromEnd = fromItem.getTime();
+                if (fromItem.getDurationMinutes() != null && fromItem.getDurationMinutes() > 0) {
+                    fromEnd = fromEnd.plusMinutes(fromItem.getDurationMinutes());
+                }
+
+                // 간격 계산
+                long interval = java.time.temporal.ChronoUnit.MINUTES.between(fromEnd, toItem.getTime());
+                return (int) interval;
+            }
+        } catch (Exception e) {
+            log.warn("표준 스케줄 간격 계산 실패: {}", e.getMessage());
+        }
+
+        return 0; // 간격 정보 없음
     }
 
     /**
