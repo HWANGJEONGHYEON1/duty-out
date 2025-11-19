@@ -42,9 +42,9 @@ class ScheduleItem {
   }
 
   String get subtitleString {
-    // 수유 항목: 수유량 표시
-    if (type == 'feed' && feedingAmount != null) {
-      return '${feedingAmount}ml';
+    // 수유 항목: 수유량 표시 (기본값 0ml)
+    if (type == 'feed') {
+      return '${feedingAmount ?? 0}ml';
     }
 
     // 수면 항목: 실제 수면 시간 우선 표시

@@ -329,10 +329,10 @@ public class AutoScheduleService {
                     request.getActualDurationMinutes(),
                     changedItem.getDurationMinutes());
 
-            // 실제 수면 시간 업데이트
-            changedItem.updateDuration(request.getActualDurationMinutes());
+            // 주의: durationMinutes는 예정 시간이므로 변경하지 않음
+            // actualSleepDuration은 ScheduleService에서 이미 저장됨
 
-            // 종료 시간 계산
+            // 종료 시간 계산 (실제 수면 시간 기준)
             actualEndTime = changedItem.getScheduledTime().plusMinutes(request.getActualDurationMinutes());
 
         } else if (request.getActualEndTime() != null) {
